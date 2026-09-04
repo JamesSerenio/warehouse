@@ -15,10 +15,10 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   static const _navItems = [
-    (label: 'Dashboard', icon: Icons.dashboard_rounded),
-    (label: 'Borrowed', icon: Icons.assignment_return_outlined),
+    (label: 'Dashboard', icon: Icons.home_rounded),
+    (label: 'Borrowed', icon: Icons.calendar_month_outlined),
     (label: 'Inventory', icon: Icons.inventory_2_outlined),
-    (label: 'Reports', icon: Icons.bar_chart_rounded),
+    (label: 'Reports', icon: Icons.description_outlined),
     (label: 'More', icon: Icons.more_horiz_rounded),
   ];
   final _supabaseService = SupabaseService();
@@ -47,61 +47,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     MaterialPageRoute<void>(builder: (_) => PlaceholderScreen(title: title)),
   );
 
-  void _onNavTap(int index) {
-    if (index == 0) return;
-    if (index == 4) {
-      _showMoreMenu();
-    } else {
-      _open(_navItems[index].label);
-    }
-  }
-
-  Future<void> _showMoreMenu() => showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    constraints: const BoxConstraints(maxWidth: 560),
-    builder: (sheetContext) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const ListTile(
-              title: Text(
-                'More',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.history_rounded),
-              title: const Text('Stock History'),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _open('Stock History');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _open('Settings');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout_rounded, color: Colors.red),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _logout();
-              },
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,22 +57,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: const Color(0xFF08213B),
         foregroundColor: Colors.white,
         titleSpacing: 4,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'WAREHOUSE',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                letterSpacing: .8,
-              ),
-            ),
-            Text(
-              'Borrow & Inventory System',
-              style: TextStyle(fontSize: 11, color: Color(0xFFB7C8DC)),
-            ),
-          ],
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
@@ -281,14 +213,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         },
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 0,
-        onDestinationSelected: _onNavTap,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        onTap: (_) {},
+        type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFFDCE9FF),
-        destinations: [
+        selectedItemColor: const Color(0xFF0D5BE1),
+        unselectedItemColor: const Color(0xFF66758A),
+        selectedFontSize: 11,
+        unselectedFontSize: 11,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700),
+        elevation: 12,
+        items: [
           for (final item in _navItems)
-            NavigationDestination(icon: Icon(item.icon), label: item.label),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: const EdgeInsets.only(bottom: 3),
+                child: Icon(item.icon, size: 23),
+              ),
+              activeIcon: Padding(
+                padding: const EdgeInsets.only(bottom: 3),
+                child: Icon(item.icon, size: 24),
+              ),
+              label: item.label,
+            ),
         ],
       ),
     );
