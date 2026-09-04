@@ -83,15 +83,7 @@ class _LoginScreenState extends State<LoginScreen>
       );
     } on LoginException catch (error) {
       if (!mounted) return;
-      final message = switch (error.failure) {
-        LoginFailure.invalidCredentials => 'Incorrect email or password.',
-        LoginFailure.inactiveAccount => 'Your account is inactive.',
-        LoginFailure.network =>
-          'Unable to connect. Check your internet connection and try again.',
-        LoginFailure.server =>
-          'The login service is unavailable. Please try again later.',
-      };
-      setState(() => _errorMessage = message);
+      setState(() => _errorMessage = error.message);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
