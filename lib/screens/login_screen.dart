@@ -187,6 +187,15 @@ class _LoginScreenState extends State<LoginScreen>
                                 primary: Color(0xFF4B91FF),
                                 error: Color(0xFFFF8A8A),
                               ),
+                              textTheme: Theme.of(context).textTheme.apply(
+                                bodyColor: Colors.white,
+                                displayColor: Colors.white,
+                              ),
+                              textSelectionTheme: const TextSelectionThemeData(
+                                cursorColor: Color(0xFF75A9FF),
+                                selectionColor: Color(0x664B91FF),
+                                selectionHandleColor: Color(0xFF4B91FF),
+                              ),
                               inputDecorationTheme: InputDecorationTheme(
                                 filled: true,
                                 fillColor: const Color(0xFF143C63),
