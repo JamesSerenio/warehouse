@@ -90,17 +90,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(
-                      maxWidth: 320,
-                      minHeight: 610,
+                      maxWidth: 380,
+                      minHeight: 530,
                     ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 24,
+                        horizontal: 30,
+                        vertical: 30,
                       ),
                       decoration: BoxDecoration(
                         color: const Color(0xF50B2746),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: const Color(0xFF28547A),
                           width: 1,
@@ -129,13 +129,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             fillColor: const Color(0xFF12385D),
                             labelStyle: const TextStyle(
                               color: Color(0xFFB7C8DC),
-                              fontSize: 13,
+                              fontSize: 15,
                             ),
                             prefixIconColor: const Color(0xFF8FAAC7),
                             suffixIconColor: const Color(0xFFB7C8DC),
                             contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 13,
+                              horizontal: 16,
+                              vertical: 15,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6),
@@ -171,36 +171,36 @@ class _LoginScreenState extends State<LoginScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const SizedBox(
-                                  width: 88,
-                                  height: 88,
+                                  width: 110,
+                                  height: 110,
                                   child: Stack(
                                     alignment: Alignment.center,
                                     children: [
                                       Icon(
                                         Icons.warehouse_outlined,
-                                        size: 86,
+                                        size: 108,
                                         color: Colors.white,
                                       ),
                                       Positioned(
-                                        bottom: 13,
+                                        bottom: 16,
                                         child: Icon(
                                           Icons.inventory_2_outlined,
-                                          size: 27,
+                                          size: 34,
                                           color: Colors.white,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 16),
                                 const Text(
                                   'WAREHOUSE',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 25,
+                                    fontSize: 30,
                                     fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.2,
+                                    letterSpacing: 1.5,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -209,20 +209,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Color(0xFFAFC2D8),
-                                    fontSize: 10,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: 0.8,
                                   ),
                                 ),
-                                const SizedBox(height: 27),
+                                const SizedBox(height: 28),
                                 const Text(
                                   'Sign in to your account',
                                   style: TextStyle(
                                     color: Color(0xFFD8E3EF),
-                                    fontSize: 13,
+                                    fontSize: 14,
                                   ),
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 18),
                                 CustomTextField(
                                   controller: _usernameController,
                                   label: 'Username',
@@ -278,10 +278,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ],
                                   ),
                                 ],
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 16),
                                 SizedBox(
                                   width: double.infinity,
-                                  height: 44,
+                                  height: 50,
                                   child: FilledButton(
                                     style: FilledButton.styleFrom(
                                       backgroundColor: const Color(0xFF0D5BE1),
@@ -290,10 +290,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                         0xFF254D82,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5),
+                                        borderRadius: BorderRadius.circular(7),
                                       ),
                                       textStyle: const TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 0.8,
                                       ),
@@ -310,9 +310,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         : const Text('LOGIN'),
                                   ),
                                 ),
-                                const SizedBox(height: 58),
+                                const SizedBox(height: 24),
                                 const Padding(
-                                  padding: EdgeInsets.only(top: 20),
+                                  padding: EdgeInsets.zero,
                                   child: Text(
                                     '© 2026 All rights reserved',
                                     style: TextStyle(
