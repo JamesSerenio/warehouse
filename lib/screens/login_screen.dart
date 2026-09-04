@@ -11,7 +11,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -19,9 +20,45 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
+  late final AnimationController _entranceController;
+  late final AnimationController _logoController;
+  late final Animation<double> _cardOpacity;
+  late final Animation<Offset> _cardSlide;
+  late final Animation<double> _logoScale;
+
+  @override
+  void initState() {
+    super.initState();
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 750),
+    );
+    _logoController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    );
+    _cardOpacity = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0, 0.75, curve: Curves.easeOut),
+    );
+    _cardSlide = Tween<Offset>(begin: const Offset(0, 0.055), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _entranceController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+    _logoScale = Tween<double>(begin: 1, end: 1.035).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
+    );
+    _entranceController.forward();
+    _logoController.repeat(reverse: true);
+  }
 
   @override
   void dispose() {
+    _entranceController.dispose();
+    _logoController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -88,276 +125,320 @@ class _LoginScreenState extends State<LoginScreen> {
                     horizontal: 16,
                     vertical: 20,
                   ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 380),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 26,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFA103356), Color(0xFA09233E)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFF38678F),
-                          width: 1,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x99000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 10),
+                  child: FadeTransition(
+                    opacity: _cardOpacity,
+                    child: SlideTransition(
+                      position: _cardSlide,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 380),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 26,
                           ),
-                          BoxShadow(
-                            color: Color(0x3D1769E8),
-                            blurRadius: 24,
-                            spreadRadius: 1,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFA103356), Color(0xFA09233E)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFF38678F),
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x99000000),
+                                blurRadius: 24,
+                                offset: Offset(0, 10),
+                              ),
+                              BoxShadow(
+                                color: Color(0x3D1769E8),
+                                blurRadius: 24,
+                                spreadRadius: 1,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: const ColorScheme.dark(
-                            primary: Color(0xFF4B91FF),
-                            error: Color(0xFFFF8A8A),
-                          ),
-                          inputDecorationTheme: InputDecorationTheme(
-                            filled: true,
-                            fillColor: const Color(0xFF143C63),
-                            labelStyle: const TextStyle(
-                              color: Color(0xFFB7C8DC),
-                              fontSize: 15,
-                            ),
-                            prefixIconColor: const Color(0xFF8FAAC7),
-                            suffixIconColor: const Color(0xFFB7C8DC),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 15,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF294D73),
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: const ColorScheme.dark(
+                                primary: Color(0xFF4B91FF),
+                                error: Color(0xFFFF8A8A),
                               ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF35638C),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF4B91FF),
-                                width: 2,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFFF8A8A),
-                              ),
-                            ),
-                          ),
-                        ),
-                        child: AutofillGroup(
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 110,
-                                  height: 110,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        Color(0x332C7EEA),
-                                        Color(0x001769E8),
-                                      ],
-                                    ),
+                              inputDecorationTheme: InputDecorationTheme(
+                                filled: true,
+                                fillColor: const Color(0xFF143C63),
+                                labelStyle: const TextStyle(
+                                  color: Color(0xFFB7C8DC),
+                                  fontSize: 15,
+                                ),
+                                prefixIconColor: const Color(0xFF8FAAC7),
+                                suffixIconColor: const Color(0xFFB7C8DC),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 15,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF294D73),
                                   ),
-                                  child: const Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.warehouse_outlined,
-                                        size: 108,
-                                        color: Colors.white,
-                                      ),
-                                      Positioned(
-                                        bottom: 16,
-                                        child: Icon(
-                                          Icons.inventory_2_outlined,
-                                          size: 34,
-                                          color: Colors.white,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF35638C),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF4B91FF),
+                                    width: 2,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFFF8A8A),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            child: AutofillGroup(
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ScaleTransition(
+                                      scale: _logoScale,
+                                      child: Container(
+                                        width: 110,
+                                        height: 110,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: RadialGradient(
+                                            colors: [
+                                              Color(0x3D2C7EEA),
+                                              Color(0x001769E8),
+                                            ],
+                                          ),
+                                        ),
+                                        child: const Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.warehouse_outlined,
+                                              size: 108,
+                                              color: Colors.white,
+                                            ),
+                                            Positioned(
+                                              bottom: 16,
+                                              child: Icon(
+                                                Icons.inventory_2_outlined,
+                                                size: 34,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'WAREHOUSE',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'BORROW & INVENTORY SYSTEM',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Color(0xFFAFC2D8),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 20,
-                                  ),
-                                  child: Container(
-                                    height: 1,
-                                    decoration: const BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Color(0x002F638F),
-                                          Color(0xFF2F638F),
-                                          Color(0x002F638F),
-                                        ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'WAREHOUSE',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.5,
                                       ),
                                     ),
-                                  ),
-                                ),
-                                const Text(
-                                  'Sign in to your account',
-                                  style: TextStyle(
-                                    color: Color(0xFFD8E3EF),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 18),
-                                CustomTextField(
-                                  controller: _usernameController,
-                                  label: 'Username',
-                                  icon: Icons.person_outline,
-                                  textInputAction: TextInputAction.next,
-                                  autofillHints: const [AutofillHints.username],
-                                ),
-                                const SizedBox(height: 12),
-                                CustomTextField(
-                                  controller: _passwordController,
-                                  label: 'Password',
-                                  icon: Icons.lock_outline,
-                                  obscureText: _obscurePassword,
-                                  textInputAction: TextInputAction.done,
-                                  autofillHints: const [AutofillHints.password],
-                                  onSubmitted: (_) => _login(),
-                                  suffixIcon: IconButton(
-                                    tooltip: _obscurePassword
-                                        ? 'Show password'
-                                        : 'Hide password',
-                                    onPressed: () => setState(
-                                      () =>
-                                          _obscurePassword = !_obscurePassword,
-                                    ),
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                    ),
-                                  ),
-                                ),
-                                if (_errorMessage != null) ...[
-                                  const SizedBox(height: 14),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Icon(
-                                        Icons.error_outline,
-                                        size: 19,
-                                        color: Color(0xFFFF8A8A),
+                                    const SizedBox(height: 4),
+                                    const Text(
+                                      'BORROW & INVENTORY SYSTEM',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Color(0xFFAFC2D8),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.8,
                                       ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: const TextStyle(
-                                            color: Color(0xFFFFA0A0),
-                                            height: 1.35,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 20,
+                                      ),
+                                      child: Container(
+                                        height: 1,
+                                        decoration: const BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Color(0x002F638F),
+                                              Color(0xFF2F638F),
+                                              Color(0x002F638F),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                                const SizedBox(height: 16),
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 50,
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFF2378F0),
-                                          Color(0xFF0D5BE1),
-                                        ],
+                                    ),
+                                    const Text(
+                                      'Sign in to your account',
+                                      style: TextStyle(
+                                        color: Color(0xFFD8E3EF),
+                                        fontSize: 14,
                                       ),
-                                      borderRadius: BorderRadius.circular(9),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Color(0x551769E8),
-                                          blurRadius: 12,
-                                          offset: Offset(0, 5),
-                                        ),
+                                    ),
+                                    const SizedBox(height: 18),
+                                    CustomTextField(
+                                      controller: _usernameController,
+                                      label: 'Username',
+                                      icon: Icons.person_outline,
+                                      textInputAction: TextInputAction.next,
+                                      autofillHints: const [
+                                        AutofillHints.username,
                                       ],
                                     ),
-                                    child: FilledButton(
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        foregroundColor: Colors.white,
-                                        disabledBackgroundColor: const Color(
-                                          0xAA254D82,
+                                    const SizedBox(height: 12),
+                                    CustomTextField(
+                                      controller: _passwordController,
+                                      label: 'Password',
+                                      icon: Icons.lock_outline,
+                                      obscureText: _obscurePassword,
+                                      textInputAction: TextInputAction.done,
+                                      autofillHints: const [
+                                        AutofillHints.password,
+                                      ],
+                                      onSubmitted: (_) => _login(),
+                                      suffixIcon: IconButton(
+                                        tooltip: _obscurePassword
+                                            ? 'Show password'
+                                            : 'Hide password',
+                                        onPressed: () => setState(
+                                          () => _obscurePassword =
+                                              !_obscurePassword,
                                         ),
-                                        shadowColor: Colors.transparent,
-                                        shape: RoundedRectangleBorder(
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_outlined
+                                              : Icons.visibility_off_outlined,
+                                        ),
+                                      ),
+                                    ),
+                                    AnimatedSwitcher(
+                                      duration: const Duration(
+                                        milliseconds: 250,
+                                      ),
+                                      switchInCurve: Curves.easeOut,
+                                      transitionBuilder: (child, animation) =>
+                                          FadeTransition(
+                                            opacity: animation,
+                                            child: SizeTransition(
+                                              sizeFactor: animation,
+                                              child: child,
+                                            ),
+                                          ),
+                                      child: _errorMessage == null
+                                          ? const SizedBox.shrink()
+                                          : Padding(
+                                              key: ValueKey(_errorMessage),
+                                              padding: const EdgeInsets.only(
+                                                top: 14,
+                                              ),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.error_outline,
+                                                    size: 19,
+                                                    color: Color(0xFFFF8A8A),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      _errorMessage!,
+                                                      style: const TextStyle(
+                                                        color: Color(
+                                                          0xFFFFA0A0,
+                                                        ),
+                                                        height: 1.35,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              Color(0xFF2378F0),
+                                              Color(0xFF0D5BE1),
+                                            ],
+                                          ),
                                           borderRadius: BorderRadius.circular(
                                             9,
                                           ),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color(0x551769E8),
+                                              blurRadius: 12,
+                                              offset: Offset(0, 5),
+                                            ),
+                                          ],
                                         ),
-                                        textStyle: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 1,
+                                        child: FilledButton(
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            foregroundColor: Colors.white,
+                                            disabledBackgroundColor:
+                                                const Color(0xAA254D82),
+                                            shadowColor: Colors.transparent,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(9),
+                                            ),
+                                            textStyle: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: 1,
+                                            ),
+                                          ),
+                                          onPressed: _isLoading ? null : _login,
+                                          child: AnimatedSwitcher(
+                                            duration: const Duration(
+                                              milliseconds: 220,
+                                            ),
+                                            child: _isLoading
+                                                ? const SizedBox.square(
+                                                    key: ValueKey('loading'),
+                                                    dimension: 24,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2.5,
+                                                          color: Colors.white,
+                                                        ),
+                                                  )
+                                                : const Text(
+                                                    'LOGIN',
+                                                    key: ValueKey('login'),
+                                                  ),
+                                          ),
                                         ),
                                       ),
-                                      onPressed: _isLoading ? null : _login,
-                                      child: _isLoading
-                                          ? const SizedBox.square(
-                                              dimension: 24,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2.5,
-                                                color: Colors.white,
-                                              ),
-                                            )
-                                          : const Text('LOGIN'),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
