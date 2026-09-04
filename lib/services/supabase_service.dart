@@ -11,18 +11,24 @@ class SupabaseService {
 
   Future<void> signIn({required String email, required String password}) async {
     try {
-      await _client.auth.signInWithPassword(
+      final response = await _client.auth.signInWithPassword(
         email: email.trim(),
         password: password,
       );
+
+      if (response.user == null || response.session == null) {
+        throw const LoginException('Incorrect email or password.');
+      }
+    } on LoginException {
+      rethrow;
     } on AuthException catch (error) {
       debugPrint('SUPABASE AUTH ERROR: ${error.message}');
       debugPrint('SUPABASE AUTH STATUS: ${error.statusCode}');
-      throw LoginException(error.message);
+      throw const LoginException('Incorrect email or password.');
     } catch (error, stackTrace) {
-      debugPrint('LOGIN UNKNOWN ERROR: $error');
+      debugPrint('LOGIN ERROR: $error');
       debugPrint('$stackTrace');
-      throw LoginException('Login error: $error');
+      throw const LoginException('Unable to connect to the login service.');
     }
   }
 
