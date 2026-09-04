@@ -63,54 +63,58 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF071A2F), Color(0xFF061425), Color(0xFF0A2340)],
-          ),
-        ),
+      backgroundColor: const Color(0xFF061527),
+      body: SizedBox.expand(
         child: Stack(
           children: [
-            const Positioned(
-              left: -80,
-              bottom: -80,
-              child: Icon(
-                Icons.warehouse_outlined,
-                size: 420,
-                color: Color(0x0D5E8BC7),
-              ),
+            const Positioned.fill(
+              child: CustomPaint(painter: _WarehouseBackgroundPainter()),
             ),
-            const Positioned(
-              right: -50,
-              top: -45,
-              child: Icon(
-                Icons.inventory_2_outlined,
-                size: 260,
-                color: Color(0x0A7DA9E8),
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xB807182B), Color(0xE6061527)],
+                  ),
+                ),
               ),
             ),
             SafeArea(
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480),
+                    constraints: const BoxConstraints(
+                      maxWidth: 320,
+                      minHeight: 610,
+                    ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 44,
-                        vertical: 40,
+                        horizontal: 20,
+                        vertical: 24,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xF20B2746),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: const Color(0x334F91F7)),
+                        color: const Color(0xF50B2746),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF28547A),
+                          width: 1,
+                        ),
                         boxShadow: const [
                           BoxShadow(
-                            color: Color(0x80000000),
-                            blurRadius: 32,
-                            offset: Offset(0, 16),
+                            color: Color(0x99000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 10),
+                          ),
+                          BoxShadow(
+                            color: Color(0x332867C0),
+                            blurRadius: 18,
+                            spreadRadius: 1,
                           ),
                         ],
                       ),
@@ -122,37 +126,38 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           inputDecorationTheme: InputDecorationTheme(
                             filled: true,
-                            fillColor: const Color(0xFF102F50),
+                            fillColor: const Color(0xFF12385D),
                             labelStyle: const TextStyle(
                               color: Color(0xFFB7C8DC),
+                              fontSize: 13,
                             ),
                             prefixIconColor: const Color(0xFF8FAAC7),
                             suffixIconColor: const Color(0xFFB7C8DC),
                             contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 19,
+                              horizontal: 12,
+                              vertical: 13,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(6),
                               borderSide: const BorderSide(
                                 color: Color(0xFF294D73),
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(6),
                               borderSide: const BorderSide(
                                 color: Color(0xFF294D73),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(6),
                               borderSide: const BorderSide(
                                 color: Color(0xFF4B91FF),
                                 width: 2,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(6),
                               borderSide: const BorderSide(
                                 color: Color(0xFFFF8A8A),
                               ),
@@ -165,56 +170,59 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Container(
+                                const SizedBox(
                                   width: 88,
                                   height: 88,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0D5BE1),
-                                    borderRadius: BorderRadius.circular(22),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Color(0x660D5BE1),
-                                        blurRadius: 22,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.warehouse_outlined,
+                                        size: 86,
+                                        color: Colors.white,
+                                      ),
+                                      Positioned(
+                                        bottom: 13,
+                                        child: Icon(
+                                          Icons.inventory_2_outlined,
+                                          size: 27,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  child: const Icon(
-                                    Icons.warehouse_rounded,
-                                    size: 52,
-                                    color: Colors.white,
-                                  ),
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 10),
                                 const Text(
                                   'WAREHOUSE',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 30,
+                                    fontSize: 25,
                                     fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.8,
+                                    letterSpacing: 1.2,
                                   ),
                                 ),
-                                const SizedBox(height: 7),
+                                const SizedBox(height: 4),
                                 const Text(
                                   'BORROW & INVENTORY SYSTEM',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Color(0xFFAFC2D8),
-                                    fontSize: 13,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w600,
-                                    letterSpacing: 1.1,
+                                    letterSpacing: 0.8,
                                   ),
                                 ),
-                                const SizedBox(height: 28),
+                                const SizedBox(height: 27),
                                 const Text(
                                   'Sign in to your account',
                                   style: TextStyle(
                                     color: Color(0xFFD8E3EF),
-                                    fontSize: 16,
+                                    fontSize: 13,
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 14),
                                 CustomTextField(
                                   controller: _usernameController,
                                   label: 'Username',
@@ -222,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   textInputAction: TextInputAction.next,
                                   autofillHints: const [AutofillHints.username],
                                 ),
-                                const SizedBox(height: 18),
+                                const SizedBox(height: 12),
                                 CustomTextField(
                                   controller: _passwordController,
                                   label: 'Password',
@@ -270,10 +278,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ],
                                   ),
                                 ],
-                                const SizedBox(height: 26),
+                                const SizedBox(height: 14),
                                 SizedBox(
                                   width: double.infinity,
-                                  height: 56,
+                                  height: 44,
                                   child: FilledButton(
                                     style: FilledButton.styleFrom(
                                       backgroundColor: const Color(0xFF0D5BE1),
@@ -282,10 +290,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                         0xFF254D82,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(5),
                                       ),
                                       textStyle: const TextStyle(
-                                        fontSize: 15,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 0.8,
                                       ),
@@ -300,6 +308,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                             ),
                                           )
                                         : const Text('LOGIN'),
+                                  ),
+                                ),
+                                const SizedBox(height: 58),
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 20),
+                                  child: Text(
+                                    '© 2026 All rights reserved',
+                                    style: TextStyle(
+                                      color: Color(0xFF91A7BF),
+                                      fontSize: 10,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -317,4 +336,64 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+class _WarehouseBackgroundPainter extends CustomPainter {
+  const _WarehouseBackgroundPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0B2948), Color(0xFF061527)],
+        ).createShader(Offset.zero & size),
+    );
+
+    final linePaint = Paint()
+      ..color = const Color(0x245D88B4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    final boxPaint = Paint()
+      ..color = const Color(0x1277A0C8)
+      ..style = PaintingStyle.fill;
+
+    final aisleWidth = size.width / 5;
+    for (var side = 0; side < 2; side++) {
+      final startX = side == 0 ? 0.0 : size.width - aisleWidth * 1.45;
+      for (var rack = 0; rack < 2; rack++) {
+        final x = startX + rack * aisleWidth * .72;
+        canvas.drawLine(Offset(x, 0), Offset(x, size.height), linePaint);
+        canvas.drawLine(
+          Offset(x + aisleWidth * .58, 0),
+          Offset(x + aisleWidth * .58, size.height),
+          linePaint,
+        );
+        for (double y = 45; y < size.height; y += 105) {
+          canvas.drawLine(
+            Offset(x, y),
+            Offset(x + aisleWidth * .58, y),
+            linePaint,
+          );
+          canvas.drawRect(
+            Rect.fromLTWH(x + 7, y + 8, aisleWidth * .44, 72),
+            boxPaint,
+          );
+        }
+      }
+    }
+
+    final roofPaint = Paint()
+      ..color = const Color(0x195D88B4)
+      ..strokeWidth = 3;
+    for (double x = -size.width; x < size.width * 2; x += 150) {
+      canvas.drawLine(Offset(x, 0), Offset(x + 260, size.height), roofPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
