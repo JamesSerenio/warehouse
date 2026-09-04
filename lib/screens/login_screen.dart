@@ -14,7 +14,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _supabaseService = SupabaseService();
   bool _obscurePassword = true;
@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _entranceController.dispose();
     _logoController.dispose();
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen>
     });
     try {
       await _supabaseService.signIn(
-        username: _usernameController.text,
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       if (!mounted) return;
@@ -84,8 +84,8 @@ class _LoginScreenState extends State<LoginScreen>
     } on LoginException catch (error) {
       if (!mounted) return;
       final message = switch (error.failure) {
-        LoginFailure.invalidCredentials ||
-        LoginFailure.inactiveAccount => 'Incorrect username or password.',
+        LoginFailure.invalidCredentials => 'Incorrect email or password.',
+        LoginFailure.inactiveAccount => 'Your account is inactive.',
         LoginFailure.network =>
           'Unable to connect. Check your internet connection and try again.',
         LoginFailure.server =>
@@ -294,12 +294,12 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     const SizedBox(height: 18),
                                     CustomTextField(
-                                      controller: _usernameController,
-                                      label: 'Username',
-                                      icon: Icons.person_outline,
+                                      controller: _emailController,
+                                      label: 'Email',
+                                      icon: Icons.email_outlined,
                                       textInputAction: TextInputAction.next,
                                       autofillHints: const [
-                                        AutofillHints.username,
+                                        AutofillHints.email,
                                       ],
                                     ),
                                     const SizedBox(height: 12),

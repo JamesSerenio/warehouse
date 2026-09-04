@@ -1,7 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../config/supabase_config.dart';
-
 enum LoginFailure { invalidCredentials, inactiveAccount, network, server }
 
 class LoginException implements Exception {
@@ -12,18 +10,10 @@ class LoginException implements Exception {
 class SupabaseService {
   SupabaseClient get _client => Supabase.instance.client;
 
-  String _normalizeUsername(String username) => username.trim().toLowerCase();
-
-  String _internalEmail(String username) =>
-      '${_normalizeUsername(username)}@${SupabaseConfig.internalEmailDomain}';
-
-  Future<void> signIn({
-    required String username,
-    required String password,
-  }) async {
+  Future<void> signIn({required String email, required String password}) async {
     try {
       final response = await _client.auth.signInWithPassword(
-        email: _internalEmail(username),
+        email: email.trim(),
         password: password,
       );
       if (response.session == null || !await _currentUserHasActiveProfile()) {
@@ -65,11 +55,10 @@ class SupabaseService {
     if (user == null) return false;
     final profile = await _client
         .from('staff_profiles')
-        .select('id')
+        .select('id, is_active')
         .eq('auth_user_id', user.id)
-        .eq('is_active', true)
         .maybeSingle();
-    return profile != null;
+    return profile?['is_active'] == true;
   }
 
   Future<void> signOut() => _client.auth.signOut();
