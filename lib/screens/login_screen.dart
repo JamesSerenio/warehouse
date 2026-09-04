@@ -77,6 +77,8 @@ class _LoginScreenState extends State<LoginScreen>
         password: _passwordController.text,
       );
       if (!mounted) return;
+      await _showLoginSuccessDialog();
+      if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute<void>(builder: (_) => const DashboardScreen()),
         (route) => false,
@@ -87,6 +89,33 @@ class _LoginScreenState extends State<LoginScreen>
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _showLoginSuccessDialog() async {
+    await showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Login successful',
+      barrierColor: const Color(0xCC020A13),
+      transitionDuration: const Duration(milliseconds: 380),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return const _LoginSuccessDialog();
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.82, end: 1).animate(curvedAnimation),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -441,6 +470,120 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginSuccessDialog extends StatelessWidget {
+  const _LoginSuccessDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      child: Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: 340,
+            margin: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(28, 30, 28, 26),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF123B63), Color(0xFF09243F)],
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFF3A76AD)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x99000000),
+                  blurRadius: 35,
+                  offset: Offset(0, 18),
+                ),
+                BoxShadow(
+                  color: Color(0x551769E8),
+                  blurRadius: 28,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: const Duration(milliseconds: 650),
+                  curve: Curves.elasticOut,
+                  builder: (context, value, child) {
+                    return Transform.scale(scale: value, child: child);
+                  },
+                  child: Container(
+                    width: 82,
+                    height: 82,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF1769E8),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x661769E8),
+                          blurRadius: 22,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 52,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
+                const Text(
+                  'LOGIN SUCCESSFUL',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 9),
+                const Text(
+                  'Welcome to Warehouse System',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Color(0xFFAFC1D6), fontSize: 14),
+                ),
+                const SizedBox(height: 26),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: FilledButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF1769E8),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+                    label: const Text('CONTINUE'),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
