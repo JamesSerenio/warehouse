@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/quick_action_card.dart';
+import '../widgets/warehouse_drawer.dart';
 import 'login_screen.dart';
 import 'placeholder_screen.dart';
 
@@ -51,7 +52,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      drawer: _DashboardDrawer(onOpen: _open, onLogout: _logout),
+      drawer: WarehouseDrawer(
+        currentPage: 'Dashboard',
+        onNavigate: _open,
+        onLogout: _logout,
+      ),
       appBar: AppBar(
         toolbarHeight: 68,
         backgroundColor: const Color(0xFF08213B),
@@ -241,69 +246,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-}
-
-class _DashboardDrawer extends StatelessWidget {
-  const _DashboardDrawer({required this.onOpen, required this.onLogout});
-  final ValueChanged<String> onOpen;
-  final VoidCallback onLogout;
-
-  @override
-  Widget build(BuildContext context) => Drawer(
-    child: Column(
-      children: [
-        const DrawerHeader(
-          decoration: BoxDecoration(color: Color(0xFF08213B)),
-          child: Row(
-            children: [
-              Icon(Icons.warehouse_rounded, color: Colors.white, size: 44),
-              SizedBox(width: 14),
-              Text(
-                'WAREHOUSE\nSYSTEM',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const ListTile(
-          selected: true,
-          leading: Icon(Icons.dashboard_rounded),
-          title: Text('Dashboard'),
-        ),
-        ListTile(
-          leading: const Icon(Icons.inventory_2_outlined),
-          title: const Text('Inventory'),
-          onTap: () {
-            Navigator.pop(context);
-            onOpen('Inventory');
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.bar_chart_rounded),
-          title: const Text('Reports'),
-          onTap: () {
-            Navigator.pop(context);
-            onOpen('Reports');
-          },
-        ),
-        const Spacer(),
-        const Divider(height: 1),
-        ListTile(
-          leading: const Icon(Icons.logout_rounded, color: Colors.red),
-          title: const Text('Logout'),
-          onTap: () {
-            Navigator.pop(context);
-            onLogout();
-          },
-        ),
-        const SizedBox(height: 12),
-      ],
-    ),
-  );
 }
 
 class _SectionTitle extends StatelessWidget {
