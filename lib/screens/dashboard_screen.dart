@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../functions/auth/logout_function.dart';
 import '../functions/navigation/navigation_function.dart';
 import '../widgets/dashboard_stat_card.dart';
+import '../widgets/logout_confirmation_dialog.dart';
 import '../widgets/quick_action_card.dart';
 import '../widgets/warehouse_drawer.dart';
 
@@ -21,22 +21,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     (label: 'Reports', icon: Icons.description_outlined),
     (label: 'More', icon: Icons.more_horiz_rounded),
   ];
-  bool _isLoggingOut = false;
-
   Future<void> _logout() async {
-    if (_isLoggingOut) return;
-    setState(() => _isLoggingOut = true);
-    try {
-      await LogoutFunction.logout();
-      if (!mounted) return;
-      NavigationFunction.goToLogin(context);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoggingOut = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to log out. Please try again.')),
-      );
-    }
+    final didLogout = await showLogoutConfirmationDialog(context);
+    if (!mounted || !didLogout) return;
+    NavigationFunction.goToLogin(context);
   }
 
   void _open(String title) => NavigationFunction.goToPage(context, title);
