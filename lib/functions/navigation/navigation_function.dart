@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../screens/add_item_screen.dart';
 import '../../screens/add_stock_screen.dart';
 import '../../screens/dashboard_screen.dart';
 import '../../screens/enter_code_screen.dart';
@@ -12,6 +11,7 @@ import '../../screens/reports_screen.dart';
 import '../../screens/return_items_screen.dart';
 import '../../screens/settings_screen.dart';
 import '../../screens/stock_history_screen.dart';
+import '../../widgets/modals/add_item_modal.dart';
 
 abstract final class NavigationFunction {
   static void goToDashboard(BuildContext context) =>
@@ -20,8 +20,7 @@ abstract final class NavigationFunction {
       _replaceAll(context, const LoginScreen());
   static void goToInventory(BuildContext context) =>
       _push(context, const InventoryScreen());
-  static void goToAddItem(BuildContext context) =>
-      _push(context, const AddItemScreen());
+  static void goToAddItem(BuildContext context) => showAddItemModal(context);
   static void goToAddStock(BuildContext context) =>
       _push(context, const AddStockScreen());
   static void goToNewTransaction(BuildContext context) =>
