@@ -201,7 +201,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
-        onTap: (_) {},
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              return;
+            case 1:
+              _open('Borrowed');
+            case 2:
+              _open('Inventory');
+            case 3:
+              _open('Reports');
+            case 4:
+              _open('More');
+          }
+        },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFF0D5BE1),

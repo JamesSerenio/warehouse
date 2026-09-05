@@ -22,7 +22,7 @@ class DashboardStatCard extends StatelessWidget {
       side: const BorderSide(color: Color(0xFFE3EAF2)),
     ),
     child: Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       child: Row(
         children: [
           Container(
@@ -37,6 +37,7 @@ class DashboardStatCard extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -46,17 +47,21 @@ class DashboardStatCard extends StatelessWidget {
                     color: Color(0xFF0A2A4A),
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
+                    height: 1,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF66758A),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(height: 4),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF66758A),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      height: 1.15,
+                    ),
                   ),
                 ),
               ],

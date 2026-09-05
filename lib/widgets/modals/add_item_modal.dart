@@ -116,6 +116,17 @@ class _AddItemModalState extends State<AddItemModal> {
         _previewRemovedBackground = false;
         _useRemovedBackground = false;
       });
+    } on PlatformException catch (error, stackTrace) {
+      debugPrint('IMAGE PICKER PLATFORM ERROR');
+      debugPrint('Code: ${error.code}');
+      debugPrint('Message: ${error.message}');
+      debugPrint('Details: ${error.details}');
+      debugPrint('$stackTrace');
+      if (!mounted) return;
+      await showWarningModal(
+        context,
+        message: 'Unable to select the image. Please try again.',
+      );
     } catch (error, stackTrace) {
       debugPrint('IMAGE PICKER ERROR: $error');
       debugPrint('$stackTrace');

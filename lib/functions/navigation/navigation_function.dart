@@ -5,6 +5,7 @@ import '../../screens/dashboard_screen.dart';
 import '../../screens/enter_code_screen.dart';
 import '../../screens/inventory_screen.dart';
 import '../../screens/login_screen.dart';
+import '../../screens/more_screen.dart';
 import '../../screens/new_transaction_screen.dart';
 import '../../screens/placeholder_screen.dart';
 import '../../screens/reports_screen.dart';
@@ -35,6 +36,8 @@ abstract final class NavigationFunction {
       _push(context, const ReportsScreen());
   static void goToSettings(BuildContext context) =>
       _push(context, const SettingsScreen());
+  static void goToMore(BuildContext context) =>
+      _push(context, const MoreScreen());
 
   static void goToPage(BuildContext context, String page) {
     switch (page) {
@@ -59,6 +62,8 @@ abstract final class NavigationFunction {
         goToReports(context);
       case 'Settings':
         goToSettings(context);
+      case 'More':
+        goToMore(context);
       default:
         _push(context, PlaceholderScreen(title: page));
     }
