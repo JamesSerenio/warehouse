@@ -44,8 +44,8 @@ class _AddItemModalState extends State<AddItemModal> {
   final _initialStockController = TextEditingController();
   final _lowStockController = TextEditingController(text: '5');
   final _noteController = TextEditingController();
+  final _unitController = TextEditingController();
   String? _category;
-  String? _unit;
   bool _isSaving = false;
 
   @override
@@ -54,6 +54,7 @@ class _AddItemModalState extends State<AddItemModal> {
     _initialStockController.dispose();
     _lowStockController.dispose();
     _noteController.dispose();
+    _unitController.dispose();
     super.dispose();
   }
 
@@ -78,7 +79,7 @@ class _AddItemModalState extends State<AddItemModal> {
       await AddItemFunction.addItem(
         productName: _productNameController.text,
         itemType: _categories[_category]!,
-        unit: _unit!,
+        unit: _unitController.text,
         initialStock: int.parse(_initialStockController.text),
         lowStockLevel: int.parse(_lowStockController.text),
         note: _noteController.text,
@@ -100,9 +101,9 @@ class _AddItemModalState extends State<AddItemModal> {
     _initialStockController.clear();
     _lowStockController.text = '5';
     _noteController.clear();
+    _unitController.clear();
     setState(() {
       _category = null;
-      _unit = null;
     });
   }
 
@@ -185,11 +186,9 @@ class _AddItemModalState extends State<AddItemModal> {
                             onChanged: (value) =>
                                 setState(() => _category = value),
                           ),
-                          _ModalDropdown(
-                            label: 'Unit *',
-                            value: _unit,
-                            items: _units,
-                            onChanged: (value) => setState(() => _unit = value),
+                          _UnitComboField(
+                            controller: _unitController,
+                            units: _units,
                           ),
                         ),
                         const SizedBox(height: 17),
@@ -336,6 +335,95 @@ class _ModalDropdown extends StatelessWidget {
       validator: (value) => value == null ? 'Please select an option.' : null,
     ),
   );
+}
+
+class _UnitComboField extends StatefulWidget {
+  const _UnitComboField({required this.controller, required this.units});
+
+  final TextEditingController controller;
+  final List<String> units;
+
+  @override
+  State<_UnitComboField> createState() => _UnitComboFieldState();
+}
+
+class _UnitComboFieldState extends State<_UnitComboField> {
+  final _menuController = MenuController();
+
+  List<String> get _suggestions {
+    final query = widget.controller.text.trim().toLowerCase();
+    if (query.isEmpty) return widget.units;
+    return widget.units
+        .where((unit) => unit.toLowerCase().contains(query))
+        .toList();
+  }
+
+  void _showSuggestions() {
+    if (!_menuController.isOpen) _menuController.open();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final suggestions = _suggestions;
+    return _FieldShell(
+      label: 'Unit *',
+      child: MenuAnchor(
+        controller: _menuController,
+        menuChildren: [
+          for (final unit in suggestions)
+            MenuItemButton(
+              onPressed: () {
+                widget.controller.text = unit;
+                widget.controller.selection = TextSelection.collapsed(
+                  offset: unit.length,
+                );
+              },
+              child: SizedBox(width: 180, child: Text(unit)),
+            ),
+          if (suggestions.isEmpty)
+            const MenuItemButton(
+              onPressed: null,
+              child: SizedBox(
+                width: 180,
+                child: Text('Custom unit will be used'),
+              ),
+            ),
+        ],
+        builder: (context, menuController, child) => TextFormField(
+          controller: widget.controller,
+          textInputAction: TextInputAction.next,
+          onTap: _showSuggestions,
+          onChanged: (_) {
+            setState(() {});
+            if (suggestions.isNotEmpty) _showSuggestions();
+          },
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Unit is required.';
+            }
+            return null;
+          },
+          decoration: _decoration('Select or type a unit').copyWith(
+            suffixIcon: IconButton(
+              tooltip: 'Show unit options',
+              onPressed: () {
+                if (menuController.isOpen) {
+                  menuController.close();
+                } else {
+                  menuController.open();
+                }
+              },
+              icon: Icon(
+                menuController.isOpen
+                    ? Icons.arrow_drop_up_rounded
+                    : Icons.arrow_drop_down_rounded,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ModalTextField extends StatelessWidget {
