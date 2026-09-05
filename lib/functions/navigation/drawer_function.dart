@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-abstract final class DrawerFunctions {
+abstract final class DrawerFunction {
   static void close(BuildContext context) => Navigator.of(context).pop();
 
   static bool isSelected({

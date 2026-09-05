@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../functions/auth_functions.dart';
-import '../functions/drawer_functions.dart';
+import '../functions/auth/login_function.dart';
+import '../functions/navigation/drawer_function.dart';
 
 class WarehouseDrawer extends StatelessWidget {
   const WarehouseDrawer({
@@ -22,7 +22,7 @@ class WarehouseDrawer extends StatelessWidget {
   static const _primary = Color(0xFF0D5BE1);
 
   void _navigate(BuildContext context, String page) {
-    DrawerFunctions.handleSelection(
+    DrawerFunction.handleSelection(
       context: context,
       currentPage: currentPage,
       selectedPage: page,
@@ -32,7 +32,7 @@ class WarehouseDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final email = AuthFunctions.getCurrentUserEmail() ?? 'No email available';
+    final email = LoginFunction.getCurrentUserEmail() ?? 'No email available';
     final drawerWidth = math.min(MediaQuery.sizeOf(context).width * .85, 320.0);
 
     return Drawer(
@@ -42,7 +42,7 @@ class WarehouseDrawer extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            _BrandHeader(onClose: () => DrawerFunctions.close(context)),
+            _BrandHeader(onClose: () => DrawerFunction.close(context)),
             const Divider(height: 1, color: Color(0xFF1D4162)),
             Expanded(
               child: ListView(
@@ -85,7 +85,7 @@ class WarehouseDrawer extends StatelessWidget {
                 iconColor: const Color(0xFFFF6B6B),
                 textColor: const Color(0xFFFF8A8A),
                 onTap: () {
-                  DrawerFunctions.close(context);
+                  DrawerFunction.close(context);
                   onLogout();
                 },
               ),
@@ -149,7 +149,7 @@ class WarehouseDrawer extends StatelessWidget {
     return _DrawerItem(
       label: label,
       icon: icon,
-      selected: DrawerFunctions.isSelected(
+      selected: DrawerFunction.isSelected(
         currentPage: currentPage,
         itemPage: label,
       ),

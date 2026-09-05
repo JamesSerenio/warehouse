@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../functions/auth_functions.dart';
-import '../functions/navigation_functions.dart';
+import '../functions/auth/logout_function.dart';
+import '../functions/navigation/navigation_function.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/quick_action_card.dart';
 import '../widgets/warehouse_drawer.dart';
@@ -27,9 +27,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (_isLoggingOut) return;
     setState(() => _isLoggingOut = true);
     try {
-      await AuthFunctions.logout();
+      await LogoutFunction.logout();
       if (!mounted) return;
-      NavigationFunctions.goToLogin(context);
+      NavigationFunction.goToLogin(context);
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoggingOut = false);
@@ -39,7 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _open(String title) => NavigationFunctions.goToPage(context, title);
+  void _open(String title) => NavigationFunction.goToPage(context, title);
 
   @override
   Widget build(BuildContext context) {

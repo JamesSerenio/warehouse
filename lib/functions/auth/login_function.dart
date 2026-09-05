@@ -1,15 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../services/supabase_service.dart';
+import '../../services/supabase_service.dart';
 
 class LoginException implements Exception {
   const LoginException(this.message);
-
   final String message;
 }
 
-abstract final class AuthFunctions {
+abstract final class LoginFunction {
   static Future<void> login({
     required String email,
     required String password,
@@ -19,7 +18,6 @@ abstract final class AuthFunctions {
         email: email.trim(),
         password: password,
       );
-
       if (response.user == null || response.session == null) {
         throw const LoginException('Incorrect email or password.');
       }
@@ -41,6 +39,4 @@ abstract final class AuthFunctions {
 
   static String? getCurrentUserEmail() =>
       SupabaseService.client.auth.currentUser?.email;
-
-  static Future<void> logout() => SupabaseService.client.auth.signOut();
 }

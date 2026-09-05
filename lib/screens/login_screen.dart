@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../functions/auth_functions.dart';
-import '../functions/navigation_functions.dart';
+import '../functions/auth/login_function.dart';
+import '../functions/navigation/navigation_function.dart';
 import '../widgets/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -71,14 +71,14 @@ class _LoginScreenState extends State<LoginScreen>
       _errorMessage = null;
     });
     try {
-      await AuthFunctions.login(
+      await LoginFunction.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       if (!mounted) return;
       await _showLoginSuccessDialog();
       if (!mounted) return;
-      NavigationFunctions.goToDashboard(context);
+      NavigationFunction.goToDashboard(context);
     } on LoginException catch (error) {
       if (!mounted) return;
       setState(() => _errorMessage = error.message);
