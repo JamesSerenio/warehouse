@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'modal_helper.dart';
 
-Future<void> showWarningModal(BuildContext context, {required String message}) {
+Future<void> showWarningModal(
+  BuildContext context, {
+  required String message,
+  String title = 'Unable to Continue',
+}) {
   return showWarehouseModal<void>(
     context: context,
     maxWidth: 390,
@@ -32,9 +36,9 @@ Future<void> showWarningModal(BuildContext context, {required String message}) {
             ),
           ),
           const SizedBox(height: 18),
-          const Text(
-            'Unable to Continue',
-            style: TextStyle(
+          Text(
+            title,
+            style: const TextStyle(
               color: Color(0xFF172033),
               fontSize: 20,
               fontWeight: FontWeight.w800,

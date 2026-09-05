@@ -10,7 +10,7 @@ class AddItemException implements Exception {
 }
 
 abstract final class AddItemFunction {
-  static Future<void> addItem({
+  static Future<Object> addItem({
     required String productName,
     required String itemType,
     required String unit,
@@ -69,6 +69,7 @@ abstract final class AddItemFunction {
         'reference_code': null,
         'note': 'Initial stock',
       });
+      return insertedItemId;
     } on PostgrestException catch (error, stackTrace) {
       debugPrint('ADD ITEM SUPABASE ERROR: ${error.message}');
       debugPrint('ADD ITEM SUPABASE CODE: ${error.code}');

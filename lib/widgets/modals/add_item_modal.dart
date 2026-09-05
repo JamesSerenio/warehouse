@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../functions/inventory/add_item_function.dart';
+import '../../functions/inventory/upload_item_image_function.dart';
 import 'modal_helper.dart';
 import 'success_modal.dart';
 import 'warning_modal.dart';
@@ -46,6 +48,8 @@ class _AddItemModalState extends State<AddItemModal> {
   final _noteController = TextEditingController();
   final _unitController = TextEditingController();
   String? _category;
+  Uint8List? _imageBytes;
+  String? _imageExtension;
   bool _isSaving = false;
 
   @override
@@ -71,12 +75,63 @@ class _AddItemModalState extends State<AddItemModal> {
     return null;
   }
 
+  Future<void> _selectImage() async {
+    try {
+      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+
+      final dotIndex = image.name.lastIndexOf('.');
+      final extension = dotIndex < 0
+          ? ''
+          : image.name.substring(dotIndex + 1).toLowerCase();
+      if (!const {'jpg', 'jpeg', 'png', 'webp'}.contains(extension)) {
+        if (!mounted) return;
+        await showWarningModal(
+          context,
+          message: 'Please select a JPG, PNG, or WEBP image.',
+        );
+        return;
+      }
+
+      final bytes = await image.readAsBytes();
+      if (bytes.lengthInBytes > 5 * 1024 * 1024) {
+        if (!mounted) return;
+        await showWarningModal(
+          context,
+          message: 'Image must be 5 MB or smaller.',
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _imageBytes = bytes;
+        _imageExtension = extension;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('IMAGE PICKER ERROR: $error');
+      debugPrint('$stackTrace');
+      if (!mounted) return;
+      await showWarningModal(
+        context,
+        message: 'Unable to select the image. Please try again.',
+      );
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _imageBytes = null;
+      _imageExtension = null;
+    });
+  }
+
   Future<void> _save() async {
     FocusScope.of(context).unfocus();
     if (_isSaving || !_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
     try {
-      await AddItemFunction.addItem(
+      final itemId = await AddItemFunction.addItem(
         productName: _productNameController.text,
         itemType: _categories[_category]!,
         unit: _unitController.text,
@@ -85,8 +140,29 @@ class _AddItemModalState extends State<AddItemModal> {
         note: _noteController.text,
       );
       if (!mounted) return;
+      String? imageUploadWarning;
+      if (_imageBytes != null && _imageExtension != null) {
+        try {
+          await UploadItemImageFunction.uploadItemImage(
+            itemId: itemId,
+            bytes: _imageBytes!,
+            extension: _imageExtension!,
+          );
+        } on UploadItemImageException catch (error) {
+          imageUploadWarning = error.message;
+        }
+      }
+      if (!mounted) return;
       _clearForm();
-      await showSuccessModal(context, message: 'Item added successfully.');
+      if (imageUploadWarning == null) {
+        await showSuccessModal(context, message: 'Item added successfully.');
+      } else {
+        await showWarningModal(
+          context,
+          title: 'Item Added',
+          message: imageUploadWarning,
+        );
+      }
     } on AddItemException catch (error) {
       if (!mounted) return;
       await showWarningModal(context, message: error.message);
@@ -104,6 +180,8 @@ class _AddItemModalState extends State<AddItemModal> {
     _unitController.clear();
     setState(() {
       _category = null;
+      _imageBytes = null;
+      _imageExtension = null;
     });
   }
 
@@ -169,6 +247,12 @@ class _AddItemModalState extends State<AddItemModal> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        _ProductImageSection(
+                          imageBytes: _imageBytes,
+                          onSelect: _selectImage,
+                          onRemove: _removeImage,
+                        ),
+                        const SizedBox(height: 20),
                         _ModalTextField(
                           label: 'Product Name *',
                           controller: _productNameController,
@@ -305,6 +389,123 @@ class _AddItemModalState extends State<AddItemModal> {
         Expanded(child: first),
         const SizedBox(width: 18),
         Expanded(child: second),
+      ],
+    );
+  }
+}
+
+class _ProductImageSection extends StatelessWidget {
+  const _ProductImageSection({
+    required this.imageBytes,
+    required this.onSelect,
+    required this.onRemove,
+  });
+
+  final Uint8List? imageBytes;
+  final VoidCallback onSelect;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD8E2EC)),
+      ),
+      child: imageBytes == null ? _emptyState() : _preview(),
+    );
+  }
+
+  Widget _emptyState() {
+    return Row(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE9F1FF),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            Icons.add_photo_alternate_outlined,
+            color: Color(0xFF0D5BE1),
+            size: 28,
+          ),
+        ),
+        const SizedBox(width: 13),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Add Product Photo',
+                style: TextStyle(
+                  color: Color(0xFF172033),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                'Optional',
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        OutlinedButton.icon(
+          onPressed: onSelect,
+          icon: const Icon(Icons.image_outlined, size: 18),
+          label: const Text('SELECT IMAGE'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF0D5BE1),
+            side: const BorderSide(color: Color(0xFF9CBEF5)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _preview() {
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(9),
+          child: AspectRatio(
+            aspectRatio: 16 / 7,
+            child: Image.memory(
+              imageBytes!,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton.icon(
+              onPressed: onSelect,
+              icon: const Icon(Icons.change_circle_outlined, size: 19),
+              label: const Text('Change Photo'),
+            ),
+            const SizedBox(width: 6),
+            TextButton.icon(
+              onPressed: onRemove,
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFDC2626),
+              ),
+              icon: const Icon(Icons.delete_outline_rounded, size: 19),
+              label: const Text('Remove'),
+            ),
+          ],
+        ),
       ],
     );
   }
