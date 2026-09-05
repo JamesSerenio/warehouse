@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../services/supabase_service.dart';
+import '../functions/auth_functions.dart';
+import '../functions/navigation_functions.dart';
 import '../widgets/custom_text_field.dart';
-import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,7 +16,6 @@ class _LoginScreenState extends State<LoginScreen>
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _supabaseService = SupabaseService();
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
@@ -72,17 +71,14 @@ class _LoginScreenState extends State<LoginScreen>
       _errorMessage = null;
     });
     try {
-      await _supabaseService.signIn(
+      await AuthFunctions.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       if (!mounted) return;
       await _showLoginSuccessDialog();
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute<void>(builder: (_) => const DashboardScreen()),
-        (route) => false,
-      );
+      NavigationFunctions.goToDashboard(context);
     } on LoginException catch (error) {
       if (!mounted) return;
       setState(() => _errorMessage = error.message);

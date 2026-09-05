@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/supabase_config.dart';
+import 'functions/auth_functions.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
-import 'services/supabase_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,13 +40,12 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-  final SupabaseService _supabaseService = SupabaseService();
   late final Future<bool> _sessionCheck;
 
   @override
   void initState() {
     super.initState();
-    _sessionCheck = _supabaseService.hasValidActiveSession();
+    _sessionCheck = Future<bool>.value(AuthFunctions.hasActiveSession());
   }
 
   @override

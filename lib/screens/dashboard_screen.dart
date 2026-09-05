@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../services/supabase_service.dart';
+import '../functions/auth_functions.dart';
+import '../functions/navigation_functions.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/quick_action_card.dart';
 import '../widgets/warehouse_drawer.dart';
-import 'login_screen.dart';
-import 'placeholder_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,19 +21,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     (label: 'Reports', icon: Icons.description_outlined),
     (label: 'More', icon: Icons.more_horiz_rounded),
   ];
-  final _supabaseService = SupabaseService();
   bool _isLoggingOut = false;
 
   Future<void> _logout() async {
     if (_isLoggingOut) return;
     setState(() => _isLoggingOut = true);
     try {
-      await _supabaseService.signOut();
+      await AuthFunctions.logout();
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute<void>(builder: (_) => const LoginScreen()),
-        (_) => false,
-      );
+      NavigationFunctions.goToLogin(context);
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoggingOut = false);
@@ -44,9 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _open(String title) => Navigator.of(context).push(
-    MaterialPageRoute<void>(builder: (_) => PlaceholderScreen(title: title)),
-  );
+  void _open(String title) => NavigationFunctions.goToPage(context, title);
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../functions/auth_functions.dart';
+import '../functions/drawer_functions.dart';
 
 class WarehouseDrawer extends StatelessWidget {
   const WarehouseDrawer({
@@ -20,15 +22,17 @@ class WarehouseDrawer extends StatelessWidget {
   static const _primary = Color(0xFF0D5BE1);
 
   void _navigate(BuildContext context, String page) {
-    Navigator.of(context).pop();
-    if (page != currentPage) onNavigate(page);
+    DrawerFunctions.handleSelection(
+      context: context,
+      currentPage: currentPage,
+      selectedPage: page,
+      onNavigate: onNavigate,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final email =
-        Supabase.instance.client.auth.currentUser?.email ??
-        'No email available';
+    final email = AuthFunctions.getCurrentUserEmail() ?? 'No email available';
     final drawerWidth = math.min(MediaQuery.sizeOf(context).width * .85, 320.0);
 
     return Drawer(
@@ -38,7 +42,7 @@ class WarehouseDrawer extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            _BrandHeader(onClose: () => Navigator.of(context).pop()),
+            _BrandHeader(onClose: () => DrawerFunctions.close(context)),
             const Divider(height: 1, color: Color(0xFF1D4162)),
             Expanded(
               child: ListView(
@@ -81,7 +85,7 @@ class WarehouseDrawer extends StatelessWidget {
                 iconColor: const Color(0xFFFF6B6B),
                 textColor: const Color(0xFFFF8A8A),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  DrawerFunctions.close(context);
                   onLogout();
                 },
               ),
@@ -145,7 +149,10 @@ class WarehouseDrawer extends StatelessWidget {
     return _DrawerItem(
       label: label,
       icon: icon,
-      selected: currentPage == label,
+      selected: DrawerFunctions.isSelected(
+        currentPage: currentPage,
+        itemPage: label,
+      ),
       onTap: () => _navigate(context, label),
     );
   }

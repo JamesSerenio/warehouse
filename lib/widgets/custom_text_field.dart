@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../functions/utility_functions.dart';
+
 class CustomTextField extends StatelessWidget {
   const CustomTextField({
     super.key,
@@ -37,12 +39,7 @@ class CustomTextField extends StatelessWidget {
         prefixIcon: Icon(icon),
         suffixIcon: suffixIcon,
       ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Please enter your ${label.toLowerCase()}.';
-        }
-        return null;
-      },
+      validator: (value) => UtilityFunctions.requiredField(value, label),
     );
   }
 }
