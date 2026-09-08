@@ -58,4 +58,54 @@ void main() {
     expect(find.text('Borrower Information'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('dashboard Enter Code opens and validates code format', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(const MaterialApp(home: DashboardScreen()));
+    await tester.pump();
+
+    await tester.tap(find.text('Enter Code'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      find.text('Enter the 4-character transaction code.'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(find.byType(TextField).last, 'a7k');
+    await tester.tap(find.text('SEARCH'));
+    await tester.pump();
+    expect(find.text('Enter the complete 4-character code.'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).last, 'a@k2');
+    await tester.tap(find.text('SEARCH'));
+    await tester.pump();
+    expect(find.text('ETS Invalid transaction code format.'), findsNothing);
+    expect(find.text('Invalid transaction code format.'), findsOneWidget);
+  });
+
+  testWidgets('drawer Enter Transaction Code opens the same modal', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(const MaterialApp(home: DashboardScreen()));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Enter Transaction Code'));
+    await tester.pump(const Duration(milliseconds: 260));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(
+      find.text('Enter the 4-character transaction code.'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

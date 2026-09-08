@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../screens/dashboard_screen.dart';
-import '../../screens/enter_code_screen.dart';
 import '../../screens/items_screen.dart';
 import '../../screens/login_screen.dart';
 import '../../screens/more_screen.dart';
@@ -10,6 +9,7 @@ import '../../screens/reports_screen.dart';
 import '../../screens/return_items_screen.dart';
 import '../../screens/stock_history_screen.dart';
 import '../../widgets/modals/add_item_modal.dart';
+import '../../widgets/modals/enter_code_modal.dart';
 import '../../widgets/modals/new_transaction_modal.dart';
 
 abstract final class NavigationFunction {
@@ -25,7 +25,7 @@ abstract final class NavigationFunction {
   static void goToReturnItems(BuildContext context) =>
       _push(context, const ReturnItemsScreen());
   static void goToEnterCode(BuildContext context) =>
-      _push(context, const EnterCodeScreen());
+      showEnterCodeModal(context);
   static void goToStockHistory(BuildContext context) =>
       _push(context, const StockHistoryScreen());
   static void goToReports(BuildContext context) =>

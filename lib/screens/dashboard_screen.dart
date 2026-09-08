@@ -4,6 +4,7 @@ import '../functions/dashboard/dashboard_summary_function.dart';
 import '../functions/navigation/navigation_function.dart';
 import '../models/dashboard_summary.dart';
 import '../widgets/modals/add_item_modal.dart';
+import '../widgets/modals/enter_code_modal.dart';
 import '../widgets/modals/new_transaction_modal.dart';
 import 'items_screen.dart';
 import '../widgets/dashboard_stat_card.dart';
@@ -57,6 +58,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _openPage(title);
   }
 
+  Future<void> _openEnterCode() async {
+    debugPrint('ENTER CODE TAP STARTED');
+    try {
+      await showEnterCodeModal(context);
+      debugPrint('ENTER CODE FLOW CLOSED');
+    } catch (error, stackTrace) {
+      debugPrint('ENTER CODE ERROR: $error');
+      debugPrint('$stackTrace');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open Enter Transaction Code.')),
+      );
+    }
+  }
+
   Future<void> _openNewTransaction() async {
     debugPrint('NEW TRANSACTION TAP STARTED');
     try {
@@ -75,6 +91,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _openPage(String title) async {
+    if (title == 'Enter Code' || title == 'Enter Transaction Code') {
+      await _openEnterCode();
+      return;
+    }
     if (title == 'New Transaction') {
       await _openNewTransaction();
       return;
@@ -212,7 +232,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           QuickActionCard(
                             label: 'Enter Code',
                             icon: Icons.password_rounded,
-                            onTap: () => _open('Enter Code'),
+                            onTap: _openEnterCode,
                           ),
                           QuickActionCard(
                             label: 'Items',
