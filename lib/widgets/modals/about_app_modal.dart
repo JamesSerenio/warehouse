@@ -108,11 +108,6 @@ class _AboutAppModal extends StatelessWidget {
                   height: 1.45,
                 ),
               ),
-              const SizedBox(height: 15),
-              const Text(
-                '© 2026 All rights reserved',
-                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
-              ),
               const SizedBox(height: 22),
               SizedBox(
                 width: double.infinity,
