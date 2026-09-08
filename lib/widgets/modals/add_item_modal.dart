@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../functions/inventory/add_item_function.dart';
-import '../../functions/inventory/remove_background_function.dart';
 import '../../functions/inventory/upload_item_image_function.dart';
 import 'modal_helper.dart';
 import 'success_modal.dart';
@@ -51,10 +50,6 @@ class _AddItemModalState extends State<AddItemModal> {
   String? _category;
   Uint8List? _imageBytes;
   String? _imageExtension;
-  Uint8List? _removedBackgroundBytes;
-  bool _previewRemovedBackground = false;
-  bool _useRemovedBackground = false;
-  bool _isRemovingBackground = false;
   bool _isSaving = false;
 
   @override
@@ -112,9 +107,6 @@ class _AddItemModalState extends State<AddItemModal> {
       setState(() {
         _imageBytes = bytes;
         _imageExtension = extension;
-        _removedBackgroundBytes = null;
-        _previewRemovedBackground = false;
-        _useRemovedBackground = false;
       });
     } on PlatformException catch (error, stackTrace) {
       debugPrint('IMAGE PICKER PLATFORM ERROR');
@@ -142,55 +134,6 @@ class _AddItemModalState extends State<AddItemModal> {
     setState(() {
       _imageBytes = null;
       _imageExtension = null;
-      _removedBackgroundBytes = null;
-      _previewRemovedBackground = false;
-      _useRemovedBackground = false;
-    });
-  }
-
-  Future<void> _removeBackground() async {
-    if (_imageBytes == null ||
-        _imageExtension == null ||
-        _isRemovingBackground) {
-      return;
-    }
-    setState(() => _isRemovingBackground = true);
-    try {
-      final processedBytes = await RemoveBackgroundFunction.removeBackground(
-        originalBytes: _imageBytes!,
-        originalExtension: _imageExtension!,
-      );
-      if (!mounted) return;
-      setState(() {
-        _removedBackgroundBytes = processedBytes;
-        _previewRemovedBackground = true;
-        // Saving continues to use the original until the user confirms PNG.
-        _useRemovedBackground = false;
-      });
-    } on RemoveBackgroundException {
-      if (!mounted) return;
-      await showWarningModal(
-        context,
-        message:
-            'Background removal failed. You can still use the original image.',
-      );
-    } finally {
-      if (mounted) setState(() => _isRemovingBackground = false);
-    }
-  }
-
-  void _selectOriginalImage() {
-    setState(() {
-      _previewRemovedBackground = false;
-      _useRemovedBackground = false;
-    });
-  }
-
-  void _selectRemovedBackgroundImage() {
-    if (_removedBackgroundBytes == null) return;
-    setState(() {
-      _previewRemovedBackground = true;
-      _useRemovedBackground = true;
     });
   }
 
@@ -211,16 +154,10 @@ class _AddItemModalState extends State<AddItemModal> {
       String? imageUploadWarning;
       if (_imageBytes != null && _imageExtension != null) {
         try {
-          final finalBytes = _useRemovedBackground
-              ? _removedBackgroundBytes!
-              : _imageBytes!;
-          final finalExtension = _useRemovedBackground
-              ? 'png'
-              : _imageExtension!;
           await UploadItemImageFunction.uploadItemImage(
             itemId: itemId,
-            bytes: finalBytes,
-            extension: finalExtension,
+            bytes: _imageBytes!,
+            extension: _imageExtension!,
           );
         } on UploadItemImageException catch (error) {
           imageUploadWarning = error.message;
@@ -256,9 +193,6 @@ class _AddItemModalState extends State<AddItemModal> {
       _category = null;
       _imageBytes = null;
       _imageExtension = null;
-      _removedBackgroundBytes = null;
-      _previewRemovedBackground = false;
-      _useRemovedBackground = false;
     });
   }
 
@@ -325,17 +259,9 @@ class _AddItemModalState extends State<AddItemModal> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _ProductImageSection(
-                          imageBytes: _previewRemovedBackground
-                              ? _removedBackgroundBytes
-                              : _imageBytes,
-                          hasProcessedImage: _removedBackgroundBytes != null,
-                          usingRemovedBackground: _useRemovedBackground,
-                          isRemovingBackground: _isRemovingBackground,
+                          imageBytes: _imageBytes,
                           onSelect: _selectImage,
                           onRemove: _removeImage,
-                          onRemoveBackground: _removeBackground,
-                          onUseOriginal: _selectOriginalImage,
-                          onUseRemovedBackground: _selectRemovedBackgroundImage,
                         ),
                         const SizedBox(height: 20),
                         _ModalTextField(
@@ -482,25 +408,13 @@ class _AddItemModalState extends State<AddItemModal> {
 class _ProductImageSection extends StatelessWidget {
   const _ProductImageSection({
     required this.imageBytes,
-    required this.hasProcessedImage,
-    required this.usingRemovedBackground,
-    required this.isRemovingBackground,
     required this.onSelect,
     required this.onRemove,
-    required this.onRemoveBackground,
-    required this.onUseOriginal,
-    required this.onUseRemovedBackground,
   });
 
   final Uint8List? imageBytes;
-  final bool hasProcessedImage;
-  final bool usingRemovedBackground;
-  final bool isRemovingBackground;
   final VoidCallback onSelect;
   final VoidCallback onRemove;
-  final VoidCallback onRemoveBackground;
-  final VoidCallback onUseOriginal;
-  final VoidCallback onUseRemovedBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -576,126 +490,39 @@ class _ProductImageSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(9),
           child: AspectRatio(
             aspectRatio: 16 / 7,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                const CustomPaint(painter: _CheckerboardPainter()),
-                Image.memory(
-                  imageBytes!,
-                  fit: BoxFit.contain,
-                  gaplessPlayback: true,
-                ),
-              ],
+            child: ColoredBox(
+              color: Colors.white,
+              child: Image.memory(
+                imageBytes!,
+                fit: BoxFit.contain,
+                gaplessPlayback: true,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          alignment: WrapAlignment.center,
-          children: hasProcessedImage
-              ? [
-                  OutlinedButton.icon(
-                    onPressed: isRemovingBackground ? null : onUseOriginal,
-                    icon: Icon(
-                      !usingRemovedBackground
-                          ? Icons.check_circle_rounded
-                          : Icons.image_outlined,
-                      size: 18,
-                    ),
-                    label: const Text('USE ORIGINAL'),
-                  ),
-                  FilledButton.icon(
-                    onPressed: isRemovingBackground
-                        ? null
-                        : onUseRemovedBackground,
-                    icon: Icon(
-                      usingRemovedBackground
-                          ? Icons.check_circle_rounded
-                          : Icons.auto_fix_high_rounded,
-                      size: 18,
-                    ),
-                    label: const Text('USE REMOVED BACKGROUND'),
-                  ),
-                  TextButton.icon(
-                    onPressed: isRemovingBackground ? null : onRemoveBackground,
-                    icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('TRY AGAIN'),
-                  ),
-                ]
-              : [
-                  FilledButton.icon(
-                    onPressed: isRemovingBackground ? null : onRemoveBackground,
-                    icon: isRemovingBackground
-                        ? const SizedBox.square(
-                            dimension: 17,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.auto_fix_high_rounded, size: 18),
-                    label: Text(
-                      isRemovingBackground
-                          ? 'REMOVING...'
-                          : 'REMOVE BACKGROUND',
-                    ),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: isRemovingBackground ? null : onUseOriginal,
-                    icon: const Icon(Icons.image_outlined, size: 18),
-                    label: const Text('USE ORIGINAL'),
-                  ),
-                ],
         ),
         const Divider(height: 22),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             TextButton.icon(
-              onPressed: isRemovingBackground ? null : onSelect,
+              onPressed: onSelect,
               icon: const Icon(Icons.change_circle_outlined, size: 19),
               label: const Text('Change Photo'),
             ),
             const SizedBox(width: 6),
             TextButton.icon(
-              onPressed: isRemovingBackground ? null : onRemove,
+              onPressed: onRemove,
               style: TextButton.styleFrom(
                 foregroundColor: const Color(0xFFDC2626),
               ),
               icon: const Icon(Icons.delete_outline_rounded, size: 19),
-              label: const Text('Remove'),
+              label: const Text('Remove Photo'),
             ),
           ],
         ),
       ],
     );
   }
-}
-
-class _CheckerboardPainter extends CustomPainter {
-  const _CheckerboardPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const squareSize = 14.0;
-    final light = Paint()..color = const Color(0xFFFFFFFF);
-    final dark = Paint()..color = const Color(0xFFE8EDF3);
-    for (double y = 0; y < size.height; y += squareSize) {
-      for (double x = 0; x < size.width; x += squareSize) {
-        final alternating =
-            ((x / squareSize).floor() + (y / squareSize).floor()).isEven;
-        canvas.drawRect(
-          Rect.fromLTWH(x, y, squareSize, squareSize),
-          alternating ? light : dark,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _ModalDropdown extends StatelessWidget {
