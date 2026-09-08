@@ -6,6 +6,7 @@ import '../../functions/inventory/edit_item_function.dart';
 import '../../functions/inventory/inventory_list_function.dart';
 import '../../functions/inventory/upload_item_image_function.dart';
 import 'modal_helper.dart';
+import 'success_modal.dart';
 
 Future<bool> showEditItemModal(BuildContext context, WarehouseItem item) async {
   return await showWarehouseModal<bool>(
@@ -33,8 +34,10 @@ class _EditItemModalState extends State<_EditItemModal> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name;
   late final TextEditingController _unit;
+  late final TextEditingController _totalStock;
   late final TextEditingController _lowStock;
   late final TextEditingController _note;
+  late final TextEditingController _correctionReason;
   late String _type;
   Uint8List? _newImageBytes;
   String? _newImageExtension;
@@ -46,8 +49,10 @@ class _EditItemModalState extends State<_EditItemModal> {
     super.initState();
     _name = TextEditingController(text: widget.item.productName);
     _unit = TextEditingController(text: widget.item.unit);
+    _totalStock = TextEditingController(text: '${widget.item.totalStock}');
     _lowStock = TextEditingController(text: '${widget.item.lowStockLevel}');
     _note = TextEditingController(text: widget.item.note ?? '');
+    _correctionReason = TextEditingController();
     _type = widget.item.itemType;
   }
 
@@ -55,10 +60,15 @@ class _EditItemModalState extends State<_EditItemModal> {
   void dispose() {
     _name.dispose();
     _unit.dispose();
+    _totalStock.dispose();
     _lowStock.dispose();
     _note.dispose();
+    _correctionReason.dispose();
     super.dispose();
   }
+
+  bool get _stockChanged =>
+      int.tryParse(_totalStock.text) != widget.item.totalStock;
 
   Future<void> _selectPhoto() async {
     try {
@@ -111,13 +121,16 @@ class _EditItemModalState extends State<_EditItemModal> {
       _error = null;
     });
     try {
-      await EditItemFunction.editItem(
+      final stockCorrected = _stockChanged;
+      await EditItemFunction.updateItem(
         itemId: widget.item.id,
         productName: _name.text,
         itemType: _type,
         unit: _unit.text,
+        totalStock: int.parse(_totalStock.text),
         lowStockLevel: int.parse(_lowStock.text),
         note: _note.text,
+        correctionReason: stockCorrected ? _correctionReason.text : null,
       );
       if (_newImageBytes != null && _newImageExtension != null) {
         await UploadItemImageFunction.uploadItemImage(
@@ -126,6 +139,13 @@ class _EditItemModalState extends State<_EditItemModal> {
           extension: _newImageExtension!,
         );
       }
+      if (!mounted) return;
+      await showSuccessModal(
+        context,
+        message: stockCorrected
+            ? 'Item and stock quantity updated successfully.'
+            : 'Item updated successfully.',
+      );
       if (mounted) Navigator.of(context).pop(true);
     } on EditItemException catch (error) {
       if (mounted) {
@@ -266,6 +286,29 @@ class _EditItemModalState extends State<_EditItemModal> {
                   ),
                   const SizedBox(height: 15),
                   _Field(
+                    label: 'Total Stock / Quantity *',
+                    child: TextFormField(
+                      controller: _totalStock,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: _decoration(),
+                      onChanged: (_) => setState(() {}),
+                      validator: (value) {
+                        final stock = int.tryParse(value ?? '');
+                        if (stock == null) return 'Enter a whole number.';
+                        if (stock < 0) return 'Total stock cannot be negative.';
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _StockSnapshot(
+                    available: widget.item.availableStock,
+                    borrowed: widget.item.borrowedStock,
+                    unit: widget.item.unit,
+                  ),
+                  const SizedBox(height: 15),
+                  _Field(
                     label: 'Low Stock Alert Level *',
                     child: TextFormField(
                       controller: _lowStock,
@@ -285,6 +328,35 @@ class _EditItemModalState extends State<_EditItemModal> {
                       maxLines: 3,
                       decoration: _decoration(),
                     ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: _stockChanged
+                        ? Padding(
+                            key: const ValueKey('correction-reason'),
+                            padding: const EdgeInsets.only(top: 15),
+                            child: _Field(
+                              label: 'Reason for Stock Correction *',
+                              child: TextFormField(
+                                controller: _correctionReason,
+                                maxLines: 2,
+                                decoration: _decoration().copyWith(
+                                  hintText:
+                                      'Incorrect quantity entered during initial setup.',
+                                ),
+                                validator: (value) {
+                                  if (_stockChanged &&
+                                      (value == null || value.trim().isEmpty)) {
+                                    return 'Please enter a reason for the stock correction.';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey('no-correction-reason'),
+                          ),
                   ),
                   if (_error != null)
                     Padding(
@@ -330,6 +402,37 @@ class _EditItemModalState extends State<_EditItemModal> {
             ),
           ),
         ),
+      ],
+    ),
+  );
+}
+
+class _StockSnapshot extends StatelessWidget {
+  const _StockSnapshot({
+    required this.available,
+    required this.borrowed,
+    required this.unit,
+  });
+
+  final int available;
+  final int borrowed;
+  final String unit;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(13),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF1F5F9),
+      borderRadius: BorderRadius.circular(9),
+      border: Border.all(color: const Color(0xFFD8E2EC)),
+    ),
+    child: Wrap(
+      spacing: 24,
+      runSpacing: 7,
+      children: [
+        Text('Current Available: $available $unit'),
+        Text('Current Borrowed: $borrowed $unit'),
       ],
     ),
   );
