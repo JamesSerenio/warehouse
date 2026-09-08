@@ -231,43 +231,74 @@ class _StockHistoryModalState extends State<_StockHistoryModal> {
   }
 }
 
-class _HistoryTable extends StatelessWidget {
+class _HistoryTable extends StatefulWidget {
   const _HistoryTable({required this.records});
+
   final List<StockMovementRecord> records;
 
   @override
-  Widget build(BuildContext context) => Scrollbar(
-    thumbVisibility: true,
-    child: SingleChildScrollView(
+  State<_HistoryTable> createState() => _HistoryTableState();
+}
+
+class _HistoryTableState extends State<_HistoryTable> {
+  final _verticalController = ScrollController();
+  final _horizontalController = ScrollController();
+
+  @override
+  void dispose() {
+    _verticalController.dispose();
+    _horizontalController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scrollbar(
+      controller: _verticalController,
+      thumbVisibility: true,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          headingRowColor: WidgetStateProperty.all(const Color(0xFFF1F5F9)),
-          columns: const [
-            DataColumn(label: Text('Date & Time')),
-            DataColumn(label: Text('Item')),
-            DataColumn(label: Text('Action')),
-            DataColumn(label: Text('Qty'), numeric: true),
-            DataColumn(label: Text('Balance'), numeric: true),
-          ],
-          rows: [
-            for (final record in records)
-              DataRow(
-                cells: [
-                  DataCell(
-                    SizedBox(width: 130, child: Text(_date(record.createdAt))),
+        controller: _verticalController,
+        child: Scrollbar(
+          controller: _horizontalController,
+          thumbVisibility: true,
+          notificationPredicate: (notification) => notification.depth == 0,
+          child: SingleChildScrollView(
+            controller: _horizontalController,
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              headingRowColor: WidgetStateProperty.all(const Color(0xFFF1F5F9)),
+              columns: const [
+                DataColumn(label: Text('Date & Time')),
+                DataColumn(label: Text('Item')),
+                DataColumn(label: Text('Action')),
+                DataColumn(label: Text('Qty'), numeric: true),
+                DataColumn(label: Text('Balance'), numeric: true),
+              ],
+              rows: [
+                for (final record in widget.records)
+                  DataRow(
+                    cells: [
+                      DataCell(
+                        SizedBox(
+                          width: 130,
+                          child: Text(_date(record.createdAt)),
+                        ),
+                      ),
+                      DataCell(
+                        SizedBox(width: 190, child: Text(record.itemName)),
+                      ),
+                      DataCell(_ActionBadge(type: record.movementType)),
+                      DataCell(Text(_quantity(record))),
+                      DataCell(Text('${record.balanceAfter}')),
+                    ],
                   ),
-                  DataCell(SizedBox(width: 190, child: Text(record.itemName))),
-                  DataCell(_ActionBadge(type: record.movementType)),
-                  DataCell(Text(_quantity(record))),
-                  DataCell(Text('${record.balanceAfter}')),
-                ],
-              ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _ActionBadge extends StatelessWidget {
