@@ -70,8 +70,6 @@ class WarehouseDrawer extends StatelessWidget {
                   _item(context, 'Stock History', Icons.history_rounded),
                   const _MenuDivider(),
                   _item(context, 'Reports', Icons.bar_chart_rounded),
-                  const _MenuDivider(),
-                  _item(context, 'Settings', Icons.settings_outlined),
                 ],
               ),
             ),

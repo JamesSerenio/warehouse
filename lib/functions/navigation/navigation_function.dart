@@ -9,7 +9,6 @@ import '../../screens/new_transaction_screen.dart';
 import '../../screens/placeholder_screen.dart';
 import '../../screens/reports_screen.dart';
 import '../../screens/return_items_screen.dart';
-import '../../screens/settings_screen.dart';
 import '../../screens/stock_history_screen.dart';
 import '../../widgets/modals/add_item_modal.dart';
 
@@ -31,8 +30,6 @@ abstract final class NavigationFunction {
       _push(context, const StockHistoryScreen());
   static void goToReports(BuildContext context) =>
       _push(context, const ReportsScreen());
-  static void goToSettings(BuildContext context) =>
-      _push(context, const SettingsScreen());
   static void goToMore(BuildContext context) =>
       _push(context, const MoreScreen());
 
@@ -55,8 +52,6 @@ abstract final class NavigationFunction {
         goToStockHistory(context);
       case 'Reports':
         goToReports(context);
-      case 'Settings':
-        goToSettings(context);
       case 'More':
         goToMore(context);
       default:
