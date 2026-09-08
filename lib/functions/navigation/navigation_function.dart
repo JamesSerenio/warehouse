@@ -5,12 +5,12 @@ import '../../screens/enter_code_screen.dart';
 import '../../screens/items_screen.dart';
 import '../../screens/login_screen.dart';
 import '../../screens/more_screen.dart';
-import '../../screens/new_transaction_screen.dart';
 import '../../screens/placeholder_screen.dart';
 import '../../screens/reports_screen.dart';
 import '../../screens/return_items_screen.dart';
 import '../../screens/stock_history_screen.dart';
 import '../../widgets/modals/add_item_modal.dart';
+import '../../widgets/modals/new_transaction_modal.dart';
 
 abstract final class NavigationFunction {
   static void goToDashboard(BuildContext context) =>
@@ -21,7 +21,7 @@ abstract final class NavigationFunction {
       _push(context, const ItemsScreen());
   static void goToAddItem(BuildContext context) => showAddItemModal(context);
   static void goToNewTransaction(BuildContext context) =>
-      _push(context, const NewTransactionScreen());
+      showNewTransactionModal(context);
   static void goToReturnItems(BuildContext context) =>
       _push(context, const ReturnItemsScreen());
   static void goToEnterCode(BuildContext context) =>
