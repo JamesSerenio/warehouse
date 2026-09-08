@@ -4,6 +4,7 @@ import '../functions/dashboard/dashboard_summary_function.dart';
 import '../functions/navigation/navigation_function.dart';
 import '../models/dashboard_summary.dart';
 import '../widgets/modals/add_item_modal.dart';
+import '../widgets/modals/new_transaction_modal.dart';
 import 'items_screen.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/logout_confirmation_dialog.dart';
@@ -56,7 +57,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _openPage(title);
   }
 
+  Future<void> _openNewTransaction() async {
+    debugPrint('NEW TRANSACTION TAP STARTED');
+    try {
+      await showNewTransactionModal(context);
+      debugPrint('NEW TRANSACTION MODAL CLOSED');
+    } catch (error, stackTrace) {
+      debugPrint('NEW TRANSACTION ERROR: $error');
+      debugPrint('$stackTrace');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to open New Transaction. Please try again.'),
+        ),
+      );
+    }
+  }
+
   Future<void> _openPage(String title) async {
+    if (title == 'New Transaction') {
+      await _openNewTransaction();
+      return;
+    }
     if (title == 'Items') {
       await Navigator.of(
         context,
@@ -180,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           QuickActionCard(
                             label: 'New Transaction',
                             icon: Icons.add_circle_outline_rounded,
-                            onTap: () => _open('New Transaction'),
+                            onTap: _openNewTransaction,
                           ),
                           QuickActionCard(
                             label: 'Return Items',

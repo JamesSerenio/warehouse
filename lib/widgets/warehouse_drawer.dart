@@ -22,6 +22,13 @@ class WarehouseDrawer extends StatelessWidget {
   static const _primary = Color(0xFF0D5BE1);
 
   void _navigate(BuildContext context, String page) {
+    if (page == 'New Transaction') {
+      DrawerFunction.close(context);
+      Future<void>.delayed(const Duration(milliseconds: 250), () {
+        onNavigate(page);
+      });
+      return;
+    }
     DrawerFunction.handleSelection(
       context: context,
       currentPage: currentPage,

@@ -63,7 +63,9 @@ class _NewTransactionModalState extends State<_NewTransactionModal> {
         _availableItems = items;
         _isLoadingItems = false;
       });
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('NEW TRANSACTION ITEM LOAD ERROR: $error');
+      debugPrint('$stackTrace');
       if (!mounted) return;
       setState(() {
         _isLoadingItems = false;
@@ -114,7 +116,8 @@ class _NewTransactionModalState extends State<_NewTransactionModal> {
       firstDate: today,
       lastDate: DateTime(today.year + 5),
     );
-    if (picked != null) _updateItem(index, entry.copyWith(returnDate: picked));
+    if (!mounted || picked == null) return;
+    _updateItem(index, entry.copyWith(returnDate: picked));
   }
 
   Future<void> _pickTime(int index) async {
@@ -126,7 +129,8 @@ class _NewTransactionModalState extends State<_NewTransactionModal> {
           ? TimeOfDay.now()
           : TimeOfDay(hour: existing ~/ 60, minute: existing % 60),
     );
-    if (picked != null) {
+    if (!mounted || picked == null) return;
+    {
       _updateItem(
         index,
         entry.copyWith(returnTimeMinutes: picked.hour * 60 + picked.minute),
