@@ -68,8 +68,9 @@ class _EditItemModalState extends State<_EditItemModal> {
           ? file.name.split('.').last.toLowerCase()
           : '';
       if (!const {'jpg', 'jpeg', 'png', 'webp'}.contains(extension)) {
-        if (mounted)
+        if (mounted) {
           setState(() => _error = 'Please select a JPG, PNG, or WEBP image.');
+        }
         return;
       }
       final bytes = await file.readAsBytes();
@@ -77,26 +78,29 @@ class _EditItemModalState extends State<_EditItemModal> {
         if (mounted) setState(() => _error = 'Image must be 5 MB or smaller.');
         return;
       }
-      if (mounted)
+      if (mounted) {
         setState(() {
           _newImageBytes = bytes;
           _newImageExtension = extension;
           _error = null;
         });
+      }
     } on PlatformException catch (error, stackTrace) {
       debugPrint('EDIT ITEM IMAGE PICKER ERROR: ${error.message}');
       debugPrint('$stackTrace');
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = 'Unable to select the image. Please try again.',
         );
+      }
     } catch (error, stackTrace) {
       debugPrint('EDIT ITEM IMAGE ERROR: $error');
       debugPrint('$stackTrace');
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = 'Unable to select the image. Please try again.',
         );
+      }
     }
   }
 
@@ -124,17 +128,19 @@ class _EditItemModalState extends State<_EditItemModal> {
       }
       if (mounted) Navigator.of(context).pop(true);
     } on EditItemException catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _saving = false;
           _error = error.message;
         });
+      }
     } on UploadItemImageException catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _saving = false;
           _error = error.message;
         });
+      }
     }
   }
 

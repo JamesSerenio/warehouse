@@ -216,7 +216,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                   .message
                             : 'Unable to load items.',
                         action: _reload,
-                                            );
+                      );
                     }
                     final items = SearchItemFunction.filter(
                       items: snapshot.data ?? const [],

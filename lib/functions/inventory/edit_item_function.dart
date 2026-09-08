@@ -50,7 +50,7 @@ abstract final class EditItemFunction {
       debugPrint('EDIT ITEM SUPABASE ERROR: ${error.message}');
       debugPrint('$stackTrace');
       if (error.code == '23505') {
-                throw const EditItemException('An item with this name already exists.');
+        throw const EditItemException('An item with this name already exists.');
       }
       throw const EditItemException('Unable to save item changes.');
     } catch (error, stackTrace) {

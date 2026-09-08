@@ -35,17 +35,19 @@ class _ViewItemModalState extends State<_ViewItemModal> {
     });
     try {
       final item = await InventoryListFunction.loadItem(_item.id);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _item = item;
           _refreshing = false;
         });
+      }
     } on InventoryListException catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _refreshing = false;
           _error = error.message;
         });
+      }
     }
   }
 
@@ -71,8 +73,9 @@ class _ViewItemModalState extends State<_ViewItemModal> {
       );
       return;
     }
-    if (await showDeleteItemConfirmationModal(context, _item) && mounted)
+    if (await showDeleteItemConfirmationModal(context, _item) && mounted) {
       Navigator.of(context).pop(true);
+    }
   }
 
   void _close() => Navigator.of(context).pop(_changed);

@@ -37,7 +37,7 @@ class _DeleteItemModalState extends State<_DeleteItemModal> {
     try {
       await DeleteItemFunction.archiveItem(widget.item);
       if (mounted) {
-        Navigator.ofgst(context).pop(true);
+        Navigator.of(context).pop(true);
       }
     } on DeleteItemException catch (error) {
       if (mounted) {
