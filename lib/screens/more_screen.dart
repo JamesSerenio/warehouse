@@ -19,7 +19,7 @@ class _MoreScreenState extends State<MoreScreen> {
   static const _navItems = [
     (label: 'Dashboard', icon: Icons.home_rounded),
     (label: 'Borrowed', icon: Icons.calendar_month_outlined),
-    (label: 'Inventory', icon: Icons.inventory_2_outlined),
+    (label: 'Items', icon: Icons.inventory_2_outlined),
     (label: 'Reports', icon: Icons.description_outlined),
     (label: 'More', icon: Icons.more_horiz_rounded),
   ];
@@ -39,7 +39,7 @@ class _MoreScreenState extends State<MoreScreen> {
       case 1:
         _open('Borrowed');
       case 2:
-        _open('Inventory');
+        _open('Items');
       case 3:
         _open('Reports');
       case 4:

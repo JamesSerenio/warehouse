@@ -17,7 +17,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const _navItems = [
     (label: 'Dashboard', icon: Icons.home_rounded),
     (label: 'Borrowed', icon: Icons.calendar_month_outlined),
-    (label: 'Inventory', icon: Icons.inventory_2_outlined),
+    (label: 'Items', icon: Icons.inventory_2_outlined),
     (label: 'Reports', icon: Icons.description_outlined),
     (label: 'More', icon: Icons.more_horiz_rounded),
   ];
@@ -139,14 +139,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           onTap: () => _open('Enter Code'),
                         ),
                         QuickActionCard(
-                          label: 'Inventory',
+                          label: 'Items',
                           icon: Icons.inventory_rounded,
-                          onTap: () => _open('Inventory'),
-                        ),
-                        QuickActionCard(
-                          label: 'Add Stock',
-                          icon: Icons.add_box_outlined,
-                          onTap: () => _open('Add Stock'),
+                          onTap: () => _open('Items'),
                         ),
                         QuickActionCard(
                           label: 'Reports',
@@ -208,7 +203,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             case 1:
               _open('Borrowed');
             case 2:
-              _open('Inventory');
+              _open('Items');
             case 3:
               _open('Reports');
             case 4:

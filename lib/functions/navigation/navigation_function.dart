@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../screens/add_stock_screen.dart';
 import '../../screens/dashboard_screen.dart';
 import '../../screens/enter_code_screen.dart';
-import '../../screens/inventory_screen.dart';
+import '../../screens/items_screen.dart';
 import '../../screens/login_screen.dart';
 import '../../screens/more_screen.dart';
 import '../../screens/new_transaction_screen.dart';
@@ -19,11 +18,9 @@ abstract final class NavigationFunction {
       _replaceAll(context, const DashboardScreen());
   static void goToLogin(BuildContext context) =>
       _replaceAll(context, const LoginScreen());
-  static void goToInventory(BuildContext context) =>
-      _push(context, const InventoryScreen());
+  static void goToItems(BuildContext context) =>
+      _push(context, const ItemsScreen());
   static void goToAddItem(BuildContext context) => showAddItemModal(context);
-  static void goToAddStock(BuildContext context) =>
-      _push(context, const AddStockScreen());
   static void goToNewTransaction(BuildContext context) =>
       _push(context, const NewTransactionScreen());
   static void goToReturnItems(BuildContext context) =>
@@ -50,12 +47,10 @@ abstract final class NavigationFunction {
       case 'Enter Code':
       case 'Enter Transaction Code':
         goToEnterCode(context);
-      case 'Inventory':
-        goToInventory(context);
+      case 'Items':
+        goToItems(context);
       case 'Add Item':
         goToAddItem(context);
-      case 'Add Stock':
-        goToAddStock(context);
       case 'Stock History':
         goToStockHistory(context);
       case 'Reports':
