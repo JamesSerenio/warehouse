@@ -265,6 +265,42 @@ class _InfoRow extends StatelessWidget {
   );
 }
 
+class _ItemThumbnail extends StatelessWidget {
+  const _ItemThumbnail({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: imageUrl == null || imageUrl!.isEmpty
+            ? const ColoredBox(
+                color: Color(0xFFE8F0FF),
+                child: Icon(
+                  Icons.inventory_2_outlined,
+                  color: Color(0xFF0D5BE1),
+                ),
+              )
+            : Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const ColoredBox(
+                  color: Color(0xFFE8F0FF),
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+}
+
 class _SummaryItem extends StatelessWidget {
   const _SummaryItem({required this.entry});
   final TransactionDraftItem entry;
@@ -280,8 +316,8 @@ class _SummaryItem extends StatelessWidget {
     ),
     child: Row(
       children: [
-        const Icon(Icons.inventory_2_outlined, color: Color(0xFF0D5BE1)),
-        const SizedBox(width: 10),
+        _ItemThumbnail(imageUrl: entry.item.imageUrl),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
