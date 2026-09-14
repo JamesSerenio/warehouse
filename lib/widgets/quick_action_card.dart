@@ -45,40 +45,50 @@ class _QuickActionCardState extends State<QuickActionCard> {
         child: InkWell(
           onTap: widget.onTap,
           splashColor: const Color(0x220D5BE1),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE9F1FF),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    widget.icon,
-                    color: const Color(0xFF0D5BE1),
-                    size: 25,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    widget.label,
-                    style: const TextStyle(
-                      color: Color(0xFF172033),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 210;
+              return Padding(
+                padding: EdgeInsets.all(compact ? 11 : 16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: compact ? 40 : 46,
+                      height: compact ? 40 : 46,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE9F1FF),
+                        borderRadius: BorderRadius.circular(compact ? 10 : 12),
+                      ),
+                      child: Icon(
+                        widget.icon,
+                        color: const Color(0xFF0D5BE1),
+                        size: compact ? 22 : 25,
+                      ),
                     ),
-                  ),
+                    SizedBox(width: compact ? 9 : 14),
+                    Expanded(
+                      child: Text(
+                        widget.label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                        style: TextStyle(
+                          color: const Color(0xFF172033),
+                          fontSize: compact ? 12.5 : 14,
+                          fontWeight: FontWeight.w700,
+                          height: 1.15,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: const Color(0xFF9AAABD),
+                      size: compact ? 19 : 24,
+                    ),
+                  ],
                 ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: Color(0xFF9AAABD),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

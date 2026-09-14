@@ -129,9 +129,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: const Color(0xFF08213B),
         foregroundColor: Colors.white,
         titleSpacing: 4,
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        title: const Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Dashboard',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
@@ -151,7 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onRefresh: _refreshDashboard,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(width < 600 ? 16 : 20),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1280),
@@ -173,7 +181,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 14,
                         mainAxisSpacing: 14,
-                        childAspectRatio: width >= 900 ? 1.75 : 1.55,
+                        childAspectRatio: width >= 900
+                            ? 1.75
+                            : width <= 500
+                            ? 1.35
+                            : 1.55,
                         children: [
                           DashboardStatCard(
                             label: 'Total Items',
@@ -218,7 +230,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 14,
                         mainAxisSpacing: 14,
-                        childAspectRatio: width >= 800 ? 2.25 : 1.55,
+                        childAspectRatio: width >= 800
+                            ? 2.25
+                            : width <= 500
+                            ? 1.45
+                            : 1.55,
                         children: [
                           QuickActionCard(
                             label: 'New Transaction',
