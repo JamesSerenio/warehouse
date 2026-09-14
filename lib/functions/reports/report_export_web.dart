@@ -2,12 +2,13 @@
 
 import 'dart:html' as html;
 
-Future<String> saveReportCsv(String filename, String csv) async {
-  final blob = html.Blob([csv], 'text/csv;charset=utf-8');
+Future<void> saveReportXlsx(String filename, List<int> bytes) async {
+  final blob = html.Blob([
+    bytes,
+  ], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   final url = html.Url.createObjectUrlFromBlob(blob);
   html.AnchorElement(href: url)
     ..setAttribute('download', filename)
     ..click();
   html.Url.revokeObjectUrl(url);
-  return 'CSV download started.';
 }

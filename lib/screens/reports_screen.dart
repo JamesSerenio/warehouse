@@ -28,6 +28,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   late DateTime _month;
   late Future<MonthlyReport> _report;
   ReportFilter _filter = ReportFilter.allItems;
+  bool _exporting = false;
 
   @override
   void initState() {
@@ -94,17 +95,26 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _export(MonthlyReport report) async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
     try {
-      final result = await ReportExportFunction.exportCsv(report);
+      final result = await ReportExportFunction.exportExcel(
+        report,
+        filterName: _filterLabel(_filter),
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(result.message)));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      debugPrint('EXCEL EXPORT ERROR: $error');
+      debugPrint('$stackTrace');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Unable to export CSV: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to export Excel report.')),
+      );
+    } finally {
+      if (mounted) setState(() => _exporting = false);
     }
   }
 
@@ -155,9 +165,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             month: _month,
                             previous: () => _changeMonth(-1),
                             next: () => _changeMonth(1),
-                            export: snapshot.hasData
+                            export: snapshot.hasData && !_exporting
                                 ? () => _export(snapshot.data!)
                                 : null,
+                            exporting: _exporting,
                           ),
                           const SizedBox(height: 18),
                           if (snapshot.connectionState != ConnectionState.done)
@@ -345,10 +356,12 @@ class _Header extends StatelessWidget {
     required this.previous,
     required this.next,
     this.export,
+    required this.exporting,
   });
   final DateTime month;
   final VoidCallback previous, next;
   final VoidCallback? export;
+  final bool exporting;
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (_, constraints) {
@@ -386,8 +399,17 @@ class _Header extends StatelessWidget {
           backgroundColor: const Color(0xFF0D5BE1),
           minimumSize: const Size(120, 48),
         ),
-        icon: const Icon(Icons.download_rounded),
-        label: const Text('EXPORT'),
+        icon: exporting
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : const Icon(Icons.table_view_rounded),
+        label: Text(exporting ? 'EXPORTING...' : 'EXPORT EXCEL'),
       );
       return constraints.maxWidth < 560
           ? Column(

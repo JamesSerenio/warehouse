@@ -1,2 +1,2 @@
-Future<String> saveReportCsv(String filename, String csv) async =>
-    'CSV export is not supported on this platform.';
+Future<void> saveReportXlsx(String filename, List<int> bytes) =>
+    throw UnsupportedError('Excel export is not supported on this platform.');
