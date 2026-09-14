@@ -14,15 +14,6 @@ class TransactionLookupException implements Exception {
 }
 
 abstract final class EnterCodeFunction {
-  static String? validateCode(String value) {
-    final code = value.trim().toUpperCase();
-    if (code.length < 4) return 'Enter the complete 4-character code.';
-    if (!RegExp(r'^[A-Z0-9]{4}$').hasMatch(code)) {
-      return 'Invalid transaction code format.';
-    }
-    return null;
-  }
-
   static Future<TransactionDetails> findTransaction(String value) async {
     final code = value.trim().toUpperCase();
     try {

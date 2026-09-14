@@ -67,13 +67,13 @@ void main() {
     await tester.tap(find.text('OPEN'));
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-      find.text('Enter the 4-character transaction code.'),
+      find.text('Enter the transaction code for the items being returned.'),
       findsOneWidget,
     );
-    expect(find.text('SEARCH'), findsOneWidget);
+    expect(find.text('CONTINUE TO RETURN'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.tap(find.byTooltip('Close'));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('SEARCH'), findsNothing);
+    expect(find.text('CONTINUE TO RETURN'), findsNothing);
   });
 }

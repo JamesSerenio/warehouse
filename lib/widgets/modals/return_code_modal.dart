@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../functions/returns/load_return_transaction_function.dart';
-import '../../functions/transactions/enter_code_function.dart';
 import '../../functions/transactions/transaction_details_function.dart';
+import '../transaction_code_input.dart';
 import 'modal_helper.dart';
 import 'return_items_modal.dart';
 
@@ -30,8 +29,8 @@ class _ReturnCodeModal extends StatefulWidget {
 class _ReturnCodeModalState extends State<_ReturnCodeModal> {
   final _controller = TextEditingController();
   final _focus = FocusNode();
-  bool _loading = false;
   String? _error;
+  bool _loading = false;
 
   @override
   void initState() {
@@ -48,10 +47,10 @@ class _ReturnCodeModalState extends State<_ReturnCodeModal> {
     super.dispose();
   }
 
-  Future<void> _search() async {
+  Future<void> _continueToReturn() async {
     if (_loading) return;
     final code = _controller.text.trim().toUpperCase();
-    final validation = EnterCodeFunction.validateCode(code);
+    final validation = validateTransactionCode(code);
     if (validation != null) {
       setState(() => _error = validation);
       return;
@@ -61,21 +60,33 @@ class _ReturnCodeModalState extends State<_ReturnCodeModal> {
       _error = null;
     });
     try {
-      final result = await LoadReturnTransactionFunction.load(
+      final transaction = await LoadReturnTransactionFunction.load(
         transactionCode: code,
       );
       if (!mounted) return;
-      if (!result.hasRemainingReturnableItems) {
+      if (transaction.returnableItems.isEmpty) {
         setState(
-          () => _error = 'All tools/equipment have already been returned.',
+          () =>
+              _error = 'This transaction has no returnable tools or equipment.',
         );
-        return;
+      } else if (!transaction.hasRemainingReturnableItems) {
+        setState(
+          () => _error =
+              'All tools/equipment in this transaction have already been returned.',
+        );
+      } else {
+        Navigator.pop(context, transaction);
       }
-      Navigator.pop(context, result);
     } on ReturnTransactionNotFoundException {
       if (mounted) setState(() => _error = 'Transaction code not found.');
     } on LoadReturnTransactionException catch (error) {
       if (mounted) setState(() => _error = error.message);
+    } catch (error, stackTrace) {
+      debugPrint('RETURN CODE MODAL ERROR: $error');
+      debugPrint('$stackTrace');
+      if (mounted) {
+        setState(() => _error = 'Unable to search. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -129,53 +140,20 @@ class _ReturnCodeModalState extends State<_ReturnCodeModal> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Enter the 4-character transaction code.',
+                'Enter the transaction code for the items being returned.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 22),
-              TextField(
+              TransactionCodeInput(
                 controller: _controller,
                 focusNode: _focus,
                 enabled: !_loading,
-                maxLength: 4,
-                textAlign: TextAlign.center,
-                textCapitalization: TextCapitalization.characters,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
-                  _UpperCaseFormatter(),
-                ],
-                onSubmitted: (_) => _search(),
+                hasError: _error != null,
                 onChanged: (_) {
                   if (_error != null) setState(() => _error = null);
                 },
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 18,
-                  color: Color(0xFF172033),
-                ),
-                decoration: InputDecoration(
-                  counterText: '',
-                  hintText: 'A7K2',
-                  filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
-                  hintStyle: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    letterSpacing: 18,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(11),
-                    borderSide: BorderSide(
-                      color: _error == null
-                          ? const Color(0xFFCBD5E1)
-                          : const Color(0xFFEF4444),
-                    ),
-                  ),
-                ),
+                onSubmitted: (_) => _continueToReturn(),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 9),
@@ -192,7 +170,7 @@ class _ReturnCodeModalState extends State<_ReturnCodeModal> {
               SizedBox(
                 height: 48,
                 child: FilledButton(
-                  onPressed: _loading ? null : _search,
+                  onPressed: _loading ? null : _continueToReturn,
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF0D5BE1),
                     shape: RoundedRectangleBorder(
@@ -209,7 +187,7 @@ class _ReturnCodeModalState extends State<_ReturnCodeModal> {
                           ),
                         )
                       : const Text(
-                          'SEARCH',
+                          'CONTINUE TO RETURN',
                           style: TextStyle(fontWeight: FontWeight.w800),
                         ),
                 ),
@@ -219,17 +197,5 @@ class _ReturnCodeModalState extends State<_ReturnCodeModal> {
         ),
       ],
     ),
-  );
-}
-
-class _UpperCaseFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) => newValue.copyWith(
-    text: newValue.text.toUpperCase(),
-    selection: newValue.selection,
-    composing: TextRange.empty,
   );
 }
