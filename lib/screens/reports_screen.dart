@@ -6,7 +6,7 @@ import '../functions/reports/report_export_function.dart';
 import '../functions/reports/report_filter_function.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/logout_confirmation_dialog.dart';
-import '../widgets/modals/return_code_modal.dart';
+import '../widgets/modals/return_items_list_modal.dart';
 import '../widgets/modals/report_detail_modal.dart';
 import '../widgets/warehouse_drawer.dart';
 
@@ -49,14 +49,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void _changed() => setState(() {});
   void _open(String page) {
     if (page == 'Return Items') {
-      _openReturnByCode();
+      _openPendingReturns();
       return;
     }
     NavigationFunction.goToPage(context, page);
   }
 
-  Future<void> _openReturnByCode() async {
-    final returned = await showReturnCodeModal(context);
+  Future<void> _openPendingReturns() async {
+    final returned = await showReturnItemsListModal(context);
     if (returned && mounted) await _reload();
   }
 

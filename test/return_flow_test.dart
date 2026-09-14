@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:warehouse_system/functions/returns/partial_return_function.dart';
 import 'package:warehouse_system/functions/returns/verify_return_function.dart';
 import 'package:warehouse_system/functions/transactions/transaction_details_function.dart';
-import 'package:warehouse_system/widgets/modals/return_code_modal.dart';
+import 'package:warehouse_system/widgets/modals/return_items_list_modal.dart';
 
 void main() {
   const item = TransactionLineDetails(
@@ -49,7 +49,7 @@ void main() {
     );
   });
 
-  testWidgets('reusable Return Items code modal opens and closes', (
+  testWidgets('reusable Return Items list modal opens and closes', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -57,7 +57,7 @@ void main() {
         home: Builder(
           builder: (context) => Scaffold(
             body: ElevatedButton(
-              onPressed: () => showReturnCodeModal(context),
+              onPressed: () => showReturnItemsListModal(context),
               child: const Text('OPEN'),
             ),
           ),
@@ -67,13 +67,16 @@ void main() {
     await tester.tap(find.text('OPEN'));
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-      find.text('Enter the transaction code for the items being returned.'),
+      find.text('Search borrower, item, or transaction...'),
       findsOneWidget,
     );
-    expect(find.text('CONTINUE TO RETURN'), findsOneWidget);
+    expect(
+      find.text('Search borrower, item, or transaction...'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
     await tester.tap(find.byTooltip('Close'));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('CONTINUE TO RETURN'), findsNothing);
+    expect(find.text('Search borrower, item, or transaction...'), findsNothing);
   });
 }

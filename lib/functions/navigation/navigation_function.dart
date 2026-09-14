@@ -11,7 +11,7 @@ import '../../screens/stock_history_screen.dart';
 import '../../widgets/modals/add_item_modal.dart';
 import '../../widgets/modals/enter_code_modal.dart';
 import '../../widgets/modals/new_transaction_modal.dart';
-import '../../widgets/modals/return_code_modal.dart';
+import '../../widgets/modals/return_items_list_modal.dart';
 
 abstract final class NavigationFunction {
   static void goToDashboard(BuildContext context) =>
@@ -26,7 +26,7 @@ abstract final class NavigationFunction {
   static void goToNewTransaction(BuildContext context) =>
       showNewTransactionModal(context);
   static void goToReturnItems(BuildContext context) =>
-      showReturnCodeModal(context);
+      showReturnItemsListModal(context);
   static void goToEnterCode(BuildContext context) =>
       showEnterCodeModal(context);
   static void goToStockHistory(BuildContext context) =>

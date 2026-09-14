@@ -4,7 +4,7 @@ import '../functions/inventory/inventory_list_function.dart';
 import '../functions/inventory/search_item_function.dart';
 import '../functions/navigation/navigation_function.dart';
 import '../widgets/logout_confirmation_dialog.dart';
-import '../widgets/modals/return_code_modal.dart';
+import '../widgets/modals/return_items_list_modal.dart';
 import '../widgets/modals/add_item_modal.dart';
 import '../widgets/modals/view_item_modal.dart';
 import '../widgets/warehouse_drawer.dart';
@@ -46,14 +46,14 @@ class _ItemsScreenState extends State<ItemsScreen> {
   void _reload() => setState(() => _items = InventoryListFunction.loadItems());
   void _open(String page) {
     if (page == 'Return Items') {
-      _openReturnByCode();
+      _openPendingReturns();
       return;
     }
     NavigationFunction.goToPage(context, page);
   }
 
-  Future<void> _openReturnByCode() async {
-    final returned = await showReturnCodeModal(context);
+  Future<void> _openPendingReturns() async {
+    final returned = await showReturnItemsListModal(context);
     if (returned && mounted) _reload();
   }
 

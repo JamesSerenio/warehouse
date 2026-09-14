@@ -9,7 +9,7 @@ import '../widgets/modals/new_transaction_modal.dart';
 import 'items_screen.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/logout_confirmation_dialog.dart';
-import '../widgets/modals/return_code_modal.dart';
+import '../widgets/modals/return_items_list_modal.dart';
 import '../widgets/quick_action_card.dart';
 import '../widgets/warehouse_drawer.dart';
 
@@ -99,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return;
     }
     if (title == 'Return Items') {
-      final returned = await showReturnCodeModal(context);
+      final returned = await showReturnItemsListModal(context);
       if (returned && mounted) await _refreshDashboard();
       return;
     }
