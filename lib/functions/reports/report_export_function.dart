@@ -17,6 +17,7 @@ abstract final class ReportExportFunction {
     required String filterName,
   }) async {
     try {
+      debugPrint('EXCEL EXPORT STARTED');
       final workbook = Excel.createExcel();
       workbook.rename('Sheet1', 'Monthly Summary');
       _buildSummary(workbook['Monthly Summary'], report, filterName);
@@ -28,6 +29,7 @@ abstract final class ReportExportFunction {
       final month = report.month.month.toString().padLeft(2, '0');
       final filename = 'warehouse_report_${report.month.year}_$month.xlsx';
       await saveReportXlsx(filename, bytes);
+      debugPrint('EXCEL EXPORT COMPLETED');
       return const ReportExportResult('Excel report exported successfully.');
     } catch (error, stackTrace) {
       debugPrint('EXCEL EXPORT ERROR: $error');
@@ -97,6 +99,15 @@ abstract final class ReportExportFunction {
       );
       cell.value = TextCellValue(headings[column]);
       cell.cellStyle = _headerStyle;
+    }
+    if (items.isEmpty) {
+      sheet.merge(CellIndex.indexByString('A2'), CellIndex.indexByString('H2'));
+      final emptyCell = sheet.cell(CellIndex.indexByString('A2'));
+      emptyCell.value = TextCellValue('No report data for this month.');
+      emptyCell.cellStyle = CellStyle(
+        fontColorHex: ExcelColor.fromHexString('FF64748B'),
+        italic: true,
+      );
     }
     for (var rowIndex = 0; rowIndex < items.length; rowIndex++) {
       final item = items[rowIndex];
