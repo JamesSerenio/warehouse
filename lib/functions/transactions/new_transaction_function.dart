@@ -1,6 +1,9 @@
-import 'dart:ui';
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../functions/inventory/inventory_list_function.dart';
+import '../../services/supabase_service.dart';
+import 'generate_code_function.dart';
 
 class TransactionDraftItem {
   const TransactionDraftItem({
@@ -17,6 +20,19 @@ class TransactionDraftItem {
 
   bool get requiresReturn =>
       item.itemType == 'tool' || item.itemType == 'equipment';
+
+  DateTime? get expectedReturnAt {
+    if (!requiresReturn || returnDate == null || returnTimeMinutes == null) {
+      return null;
+    }
+    return DateTime(
+      returnDate!.year,
+      returnDate!.month,
+      returnDate!.day,
+      returnTimeMinutes! ~/ 60,
+      returnTimeMinutes! % 60,
+    );
+  }
 
   TransactionDraftItem copyWith({
     int? quantity,
@@ -46,11 +62,16 @@ class NewTransactionDraft {
   final String? note;
 }
 
-class TransactionStorageUnavailableException implements Exception {
-  const TransactionStorageUnavailableException();
+class CreatedTransaction {
+  const CreatedTransaction({required this.id, required this.transactionCode});
 
-  String get message =>
-      'Transaction database setup is required before transactions can be saved.';
+  final Object id;
+  final String transactionCode;
+}
+
+class CreateTransactionException implements Exception {
+  const CreateTransactionException(this.message);
+  final String message;
 }
 
 abstract final class NewTransactionFunction {
@@ -98,20 +119,136 @@ abstract final class NewTransactionFunction {
       if (entry.quantity > entry.item.availableStock) {
         return 'Only ${entry.item.availableStock} ${entry.item.unit} are available for ${entry.item.productName}.';
       }
-      if (entry.requiresReturn &&
-          (entry.returnDate == null || entry.returnTimeMinutes == null)) {
+      if (entry.requiresReturn && entry.expectedReturnAt == null) {
         return 'Complete the return date and time for ${entry.item.productName}.';
       }
     }
     return null;
   }
 
-  static Future<void> confirmTransaction({
+  static Future<CreatedTransaction> confirmTransaction({
     required NewTransactionDraft draft,
-    required List<Offset?> signaturePoints,
+    required Uint8List signaturePng,
   }) async {
-    // Transaction tables and signature storage are intentionally not assumed.
-    // Connect this method only after the database schema is installed.
-    throw const TransactionStorageUnavailableException();
+    final validation = validateDraft(draft);
+    if (validation != null) throw CreateTransactionException(validation);
+    if (signaturePng.isEmpty) {
+      throw const CreateTransactionException('Borrower signature is required.');
+    }
+
+    final code = await _generateUniqueCode();
+    final signaturePath = '$code/borrow_signature.png';
+    var signatureUploaded = false;
+
+    try {
+      await SupabaseService.client.storage
+          .from('signatures')
+          .uploadBinary(
+            signaturePath,
+            signaturePng,
+            fileOptions: const FileOptions(
+              contentType: 'image/png',
+              cacheControl: '3600',
+              upsert: false,
+            ),
+          );
+      signatureUploaded = true;
+
+      final result = await SupabaseService.client.rpc(
+        'create_warehouse_transaction',
+        params: {
+          'p_transaction_code': code,
+          'p_borrower_name': draft.borrowerName.trim(),
+          'p_contact_number': draft.contactNumber.trim(),
+          'p_note': draft.note?.trim().isEmpty ?? true
+              ? null
+              : draft.note!.trim(),
+          'p_signature_path': signaturePath,
+          'p_items': [
+            for (final entry in draft.items)
+              {
+                'item_id': entry.item.id.toString(),
+                'quantity': entry.quantity,
+                'item_type': entry.item.itemType,
+                'expected_return_at': entry.expectedReturnAt
+                    ?.toUtc()
+                    .toIso8601String(),
+              },
+          ],
+        },
+      );
+
+      final data = result is Map<String, dynamic>
+          ? result
+          : Map<String, dynamic>.from(result as Map);
+      final transactionId = data['transaction_id'];
+      if (transactionId == null) {
+        throw const CreateTransactionException(
+          'The transaction was saved but no transaction ID was returned.',
+        );
+      }
+      return CreatedTransaction(id: transactionId, transactionCode: code);
+    } on CreateTransactionException {
+      if (signatureUploaded) await _removeSignature(signaturePath);
+      rethrow;
+    } on StorageException catch (error, stackTrace) {
+      debugPrint('CREATE TRANSACTION STORAGE ERROR: ${error.message}');
+      debugPrint('CREATE TRANSACTION STORAGE STATUS: ${error.statusCode}');
+      debugPrint('$stackTrace');
+      throw const CreateTransactionException(
+        'Unable to upload the signature. Please try again.',
+      );
+    } on PostgrestException catch (error, stackTrace) {
+      debugPrint('CREATE TRANSACTION ERROR: ${error.message}');
+      debugPrint('CREATE TRANSACTION CODE: ${error.code}');
+      debugPrint('CREATE TRANSACTION DETAILS: ${error.details}');
+      debugPrint('$stackTrace');
+      if (signatureUploaded) await _removeSignature(signaturePath);
+      final message = error.message.toLowerCase();
+      if (message.contains('not enough stock')) {
+        throw CreateTransactionException(error.message);
+      }
+      if (error.code == 'PGRST202' || message.contains('function')) {
+        throw const CreateTransactionException(
+          'The transaction save function is missing in Supabase. Run the required SQL setup.',
+        );
+      }
+      throw CreateTransactionException(
+        error.message.isEmpty
+            ? 'Unable to save the transaction. Please try again.'
+            : error.message,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('CREATE TRANSACTION ERROR: $error');
+      debugPrint('$stackTrace');
+      if (signatureUploaded) await _removeSignature(signaturePath);
+      throw const CreateTransactionException(
+        'Unable to save the transaction. Please try again.',
+      );
+    }
+  }
+
+  static Future<String> _generateUniqueCode() async {
+    for (var attempt = 0; attempt < 20; attempt++) {
+      final code = GenerateCodeFunction.generate();
+      final existing = await SupabaseService.client
+          .from('transactions')
+          .select('id')
+          .eq('transaction_code', code)
+          .maybeSingle();
+      if (existing == null) return code;
+    }
+    throw const CreateTransactionException(
+      'Unable to generate a unique transaction code. Please try again.',
+    );
+  }
+
+  static Future<void> _removeSignature(String path) async {
+    try {
+      await SupabaseService.client.storage.from('signatures').remove([path]);
+    } catch (error, stackTrace) {
+      debugPrint('SIGNATURE CLEANUP ERROR: $error');
+      debugPrint('$stackTrace');
+    }
   }
 }

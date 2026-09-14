@@ -31,5 +31,19 @@ class DashboardLowStockItem {
 }
 
 class DashboardDueTodayItem {
-  const DashboardDueTodayItem();
+  const DashboardDueTodayItem({
+    required this.transactionCode,
+    required this.borrowerName,
+    required this.productName,
+    required this.remainingQuantity,
+    required this.unit,
+    required this.expectedReturnAt,
+  });
+
+  final String transactionCode;
+  final String borrowerName;
+  final String productName;
+  final int remainingQuantity;
+  final String unit;
+  final DateTime expectedReturnAt;
 }

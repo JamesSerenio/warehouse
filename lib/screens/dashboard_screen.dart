@@ -76,8 +76,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _openNewTransaction() async {
     debugPrint('NEW TRANSACTION TAP STARTED');
     try {
-      await showNewTransactionModal(context);
+      final saved = await showNewTransactionModal(context);
       debugPrint('NEW TRANSACTION MODAL CLOSED');
+      if (saved && mounted) await _refreshDashboard();
     } catch (error, stackTrace) {
       debugPrint('NEW TRANSACTION ERROR: $error');
       debugPrint('$stackTrace');
@@ -251,10 +252,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: _EmptySection(
-                                title: 'Due Today',
-                                message: 'No items due today.',
-                                icon: Icons.event_available_outlined,
+                              child: _DueTodaySection(
+                                items: _summary?.dueTodayItems ?? const [],
+                                isLoading: _isLoading,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -269,10 +269,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       else
                         Column(
                           children: [
-                            _EmptySection(
-                              title: 'Due Today',
-                              message: 'No items due today.',
-                              icon: Icons.event_available_outlined,
+                            _DueTodaySection(
+                              items: _summary?.dueTodayItems ?? const [],
+                              isLoading: _isLoading,
                             ),
                             const SizedBox(height: 16),
                             _LowStockSection(
@@ -345,15 +344,11 @@ class _SectionTitle extends StatelessWidget {
   );
 }
 
-class _EmptySection extends StatelessWidget {
-  const _EmptySection({
-    required this.title,
-    required this.message,
-    required this.icon,
-  });
-  final String title;
-  final String message;
-  final IconData icon;
+class _DueTodaySection extends StatelessWidget {
+  const _DueTodaySection({required this.items, required this.isLoading});
+
+  final List<DashboardDueTodayItem> items;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -368,18 +363,54 @@ class _EmptySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle(title),
-          const SizedBox(height: 22),
-          Center(
-            child: Column(
-              children: [
-                Icon(icon, size: 42, color: const Color(0xFF9AAABD)),
-                const SizedBox(height: 10),
-                Text(message, style: const TextStyle(color: Color(0xFF66758A))),
-              ],
-            ),
-          ),
+          const _SectionTitle('Due Today'),
           const SizedBox(height: 14),
+          if (isLoading)
+            const SizedBox(
+              height: 82,
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
+            )
+          else if (items.isEmpty)
+            const SizedBox(
+              height: 82,
+              child: Center(
+                child: Text(
+                  'No items due today.',
+                  style: TextStyle(color: Color(0xFF66758A)),
+                ),
+              ),
+            )
+          else
+            ...items
+                .take(5)
+                .map(
+                  (item) => ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(
+                      Icons.schedule_rounded,
+                      color: Color(0xFF0D5BE1),
+                    ),
+                    title: Text(
+                      item.productName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: Text(
+                      '${item.transactionCode} • ${item.borrowerName}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Text(
+                      '${item.remainingQuantity} ${item.unit}',
+                      style: const TextStyle(
+                        color: Color(0xFF0D5BE1),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
         ],
       ),
     ),

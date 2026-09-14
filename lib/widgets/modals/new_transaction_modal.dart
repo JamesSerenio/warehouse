@@ -2,16 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../functions/inventory/inventory_list_function.dart';
+import '../../functions/transactions/enter_code_function.dart';
 import '../../functions/transactions/new_transaction_function.dart';
 import 'modal_helper.dart';
 import 'signature_modal.dart';
+import 'transaction_details_modal.dart';
+import 'transaction_success_modal.dart';
 
-Future<void> showNewTransactionModal(BuildContext context) {
-  return showWarehouseModal<void>(
+Future<bool> showNewTransactionModal(BuildContext context) async {
+  final transaction = await showWarehouseModal<CreatedTransaction>(
     context: context,
     maxWidth: 920,
     builder: (_) => const _NewTransactionModal(),
   );
+  if (transaction == null || !context.mounted) return false;
+
+  final action = await showTransactionSuccessModal(
+    context,
+    transactionCode: transaction.transactionCode,
+  );
+  if (!context.mounted) return true;
+  if (action == TransactionSuccessAction.viewTransaction) {
+    try {
+      final details = await EnterCodeFunction.findTransaction(
+        transaction.transactionCode,
+      );
+      if (context.mounted) {
+        await showTransactionDetailsModal(context, transaction: details);
+      }
+    } catch (error, stackTrace) {
+      debugPrint('VIEW CREATED TRANSACTION ERROR: $error');
+      debugPrint('$stackTrace');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to load transaction details.')),
+        );
+      }
+    }
+  }
+  return true;
 }
 
 class _NewTransactionModal extends StatefulWidget {
@@ -157,7 +186,9 @@ class _NewTransactionModalState extends State<_NewTransactionModal> {
       return;
     }
     setState(() => _formError = null);
-    await showSignatureModal(context, draft: draft);
+    final transaction = await showSignatureModal(context, draft: draft);
+    if (!mounted || transaction == null) return;
+    Navigator.of(context).pop(transaction);
   }
 
   @override

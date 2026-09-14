@@ -1,13 +1,17 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 
 import '../../functions/transactions/new_transaction_function.dart';
 import 'modal_helper.dart';
 
-Future<void> showSignatureModal(
+Future<CreatedTransaction?> showSignatureModal(
   BuildContext context, {
   required NewTransactionDraft draft,
 }) {
-  return showWarehouseModal<void>(
+  return showWarehouseModal<CreatedTransaction>(
     context: context,
     maxWidth: 720,
     barrierDismissible: false,
@@ -26,6 +30,7 @@ class _SignatureModal extends StatefulWidget {
 
 class _SignatureModalState extends State<_SignatureModal> {
   final List<Offset?> _points = [];
+  final _signatureKey = GlobalKey();
   String? _error;
   bool _isConfirming = false;
 
@@ -46,19 +51,44 @@ class _SignatureModalState extends State<_SignatureModal> {
       _error = null;
     });
     try {
-      await NewTransactionFunction.confirmTransaction(
+      final signaturePng = await _captureSignaturePng();
+      final transaction = await NewTransactionFunction.confirmTransaction(
         draft: widget.draft,
-        signaturePoints: List.unmodifiable(_points),
+        signaturePng: signaturePng,
       );
-    } on TransactionStorageUnavailableException catch (error) {
+      if (!mounted) return;
+      Navigator.of(context).pop(transaction);
+    } on CreateTransactionException catch (error) {
       if (mounted) setState(() => _error = error.message);
-    } catch (error) {
+    } catch (error, stackTrace) {
+      debugPrint('CONFIRM TRANSACTION ERROR: $error');
+      debugPrint('$stackTrace');
       if (mounted) {
         setState(() => _error = 'Unable to confirm the transaction.');
       }
     } finally {
       if (mounted) setState(() => _isConfirming = false);
     }
+  }
+
+  Future<Uint8List> _captureSignaturePng() async {
+    await WidgetsBinding.instance.endOfFrame;
+    final boundary =
+        _signatureKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
+    if (boundary == null) {
+      throw const CreateTransactionException(
+        'Unable to capture the signature. Please try again.',
+      );
+    }
+    final image = await boundary.toImage(pixelRatio: 2);
+    final data = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (data == null) {
+      throw const CreateTransactionException(
+        'Unable to capture the signature. Please try again.',
+      );
+    }
+    return data.buffer.asUint8List();
   }
 
   @override
@@ -113,27 +143,30 @@ class _SignatureModalState extends State<_SignatureModal> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Container(
-                    height: 190,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFCBD5E1)),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onPanStart: (details) =>
-                            _addPoint(details.localPosition),
-                        onPanUpdate: (details) =>
-                            _addPoint(details.localPosition),
-                        onPanEnd: (_) => _addPoint(null),
-                        child: CustomPaint(
-                          painter: _SignaturePainter(_points),
-                          size: Size(
-                            constraints.maxWidth,
-                            constraints.maxHeight,
+                  RepaintBoundary(
+                    key: _signatureKey,
+                    child: Container(
+                      height: 190,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onPanStart: (details) =>
+                              _addPoint(details.localPosition),
+                          onPanUpdate: (details) =>
+                              _addPoint(details.localPosition),
+                          onPanEnd: (_) => _addPoint(null),
+                          child: CustomPaint(
+                            painter: _SignaturePainter(_points),
+                            size: Size(
+                              constraints.maxWidth,
+                              constraints.maxHeight,
+                            ),
                           ),
                         ),
                       ),
