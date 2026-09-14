@@ -59,6 +59,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final returned = await showReturnCodeModal(context);
     if (returned && mounted) await _reload();
   }
+
   Future<void> _reload() async {
     final future = MonthlyReportFunction.load(_month);
     setState(() => _report = future);
