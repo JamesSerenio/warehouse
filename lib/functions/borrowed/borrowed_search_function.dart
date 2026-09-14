@@ -7,13 +7,15 @@ abstract final class BorrowedSearchFunction {
   ) {
     final value = query.trim().toLowerCase();
     if (value.isEmpty) return transactions;
-    return transactions.where((transaction) {
-      return transaction.transactionCode.toLowerCase().contains(value) ||
-          transaction.borrowerName.toLowerCase().contains(value) ||
-          transaction.contactNumber.toLowerCase().contains(value) ||
-          transaction.items.any(
-            (item) => item.productName.toLowerCase().contains(value),
-          );
-    }).toList(growable: false);
+    return transactions
+        .where((transaction) {
+          return transaction.transactionCode.toLowerCase().contains(value) ||
+              transaction.borrowerName.toLowerCase().contains(value) ||
+              transaction.contactNumber.toLowerCase().contains(value) ||
+              transaction.items.any(
+                (item) => item.productName.toLowerCase().contains(value),
+              );
+        })
+        .toList(growable: false);
   }
 }

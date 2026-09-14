@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../screens/borrowed_screen.dart';
 import '../../screens/dashboard_screen.dart';
 import '../../screens/items_screen.dart';
 import '../../screens/login_screen.dart';
@@ -19,6 +20,8 @@ abstract final class NavigationFunction {
       _replaceAll(context, const LoginScreen());
   static void goToItems(BuildContext context) =>
       _push(context, const ItemsScreen());
+  static void goToBorrowed(BuildContext context) =>
+      _push(context, const BorrowedScreen());
   static void goToAddItem(BuildContext context) => showAddItemModal(context);
   static void goToNewTransaction(BuildContext context) =>
       showNewTransactionModal(context);
@@ -37,6 +40,8 @@ abstract final class NavigationFunction {
     switch (page) {
       case 'Dashboard':
         goToDashboard(context);
+      case 'Borrowed':
+        goToBorrowed(context);
       case 'New Transaction':
         goToNewTransaction(context);
       case 'Return Items':

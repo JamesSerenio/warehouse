@@ -26,20 +26,22 @@ class BorrowedTransaction {
       return BorrowedStatus.returned;
     }
     if (items.any((item) => item.isOverdue)) return BorrowedStatus.overdue;
-    if (items.any((item) =>
-        item.returnedQuantity > 0 && item.remainingQuantity > 0)) {
+    if (items.any(
+      (item) => item.returnedQuantity > 0 && item.remainingQuantity > 0,
+    )) {
       return BorrowedStatus.partialReturn;
     }
     return BorrowedStatus.active;
   }
 
   DateTime? get soonestDueDate {
-    final dates = items
-        .where((item) => item.remainingQuantity > 0)
-        .map((item) => item.expectedReturnAt)
-        .whereType<DateTime>()
-        .toList(growable: false)
-      ..sort();
+    final dates =
+        items
+            .where((item) => item.remainingQuantity > 0)
+            .map((item) => item.expectedReturnAt)
+            .whereType<DateTime>()
+            .toList(growable: false)
+          ..sort();
     return dates.isEmpty ? null : dates.first;
   }
 }
@@ -58,10 +60,12 @@ abstract final class BorrowedListFunction {
           .order('created_at', ascending: false);
       final transactions = rows
           .map(TransactionDetails.fromJson)
-          .map((details) => BorrowedTransaction(
-                details: details,
-                items: details.returnableItems,
-              ))
+          .map(
+            (details) => BorrowedTransaction(
+              details: details,
+              items: details.returnableItems,
+            ),
+          )
           .where((transaction) => transaction.items.isNotEmpty)
           .toList();
       transactions.sort(_compare);
@@ -92,9 +96,8 @@ abstract final class BorrowedListFunction {
   }
 
   static int _rank(BorrowedStatus status) => switch (status) {
-        BorrowedStatus.overdue => 0,
-        BorrowedStatus.partialReturn => 1,
-        BorrowedStatus.active => 2,
-        BorrowedStatus.returned => 3,
-      };
+    BorrowedStatus.overdue => 0,
+    BorrowedStatus.partialReturn || BorrowedStatus.active => 1,
+    BorrowedStatus.returned => 2,
+  };
 }
