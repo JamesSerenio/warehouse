@@ -100,18 +100,7 @@ class _TransactionDetailsModal extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: FilledButton.icon(
-                        onPressed: () async {
-                          Navigator.pop(context);
-                          await Future<void>.delayed(
-                            const Duration(milliseconds: 280),
-                          );
-                          if (!context.mounted) return;
-                          await showReturnItemsModal(
-                            context,
-                            transactionId: transaction.id,
-                            transactionCode: transaction.transactionCode,
-                          );
-                        },
+                        onPressed: () => Navigator.pop(context, true),
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFF0D5BE1),
                           minimumSize: const Size(190, 48),

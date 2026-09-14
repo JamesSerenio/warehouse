@@ -6,6 +6,7 @@ import '../functions/reports/report_export_function.dart';
 import '../functions/reports/report_filter_function.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/logout_confirmation_dialog.dart';
+import '../widgets/modals/return_code_modal.dart';
 import '../widgets/modals/report_detail_modal.dart';
 import '../widgets/warehouse_drawer.dart';
 
@@ -46,7 +47,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   void _changed() => setState(() {});
-  void _open(String page) => NavigationFunction.goToPage(context, page);
+  void _open(String page) {
+    if (page == 'Return Items') {
+      _openReturnByCode();
+      return;
+    }
+    NavigationFunction.goToPage(context, page);
+  }
+
+  Future<void> _openReturnByCode() async {
+    final returned = await showReturnCodeModal(context);
+    if (returned && mounted) await _reload();
+  }
   Future<void> _reload() async {
     final future = MonthlyReportFunction.load(_month);
     setState(() => _report = future);

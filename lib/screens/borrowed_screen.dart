@@ -7,6 +7,7 @@ import '../functions/navigation/navigation_function.dart';
 import '../functions/transactions/transaction_details_function.dart';
 import '../services/supabase_service.dart';
 import '../widgets/logout_confirmation_dialog.dart';
+import '../widgets/modals/return_code_modal.dart';
 import '../widgets/modals/return_items_modal.dart';
 import '../widgets/modals/transaction_details_modal.dart';
 import '../widgets/warehouse_drawer.dart';
@@ -45,7 +46,18 @@ class _BorrowedScreenState extends State<BorrowedScreen> {
   }
 
   void _changed() => setState(() {});
-  void _open(String page) => NavigationFunction.goToPage(context, page);
+  void _open(String page) {
+    if (page == 'Return Items') {
+      _openReturnByCode();
+      return;
+    }
+    NavigationFunction.goToPage(context, page);
+  }
+
+  Future<void> _openReturnByCode() async {
+    final returned = await showReturnCodeModal(context);
+    if (returned && mounted) await _refresh();
+  }
 
   Future<void> _refresh() async {
     final future = BorrowedListFunction.load();

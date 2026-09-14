@@ -9,6 +9,7 @@ import '../widgets/modals/new_transaction_modal.dart';
 import 'items_screen.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/logout_confirmation_dialog.dart';
+import '../widgets/modals/return_code_modal.dart';
 import '../widgets/quick_action_card.dart';
 import '../widgets/warehouse_drawer.dart';
 
@@ -62,6 +63,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     debugPrint('ENTER CODE TAP STARTED');
     try {
       await showEnterCodeModal(context);
+      if (mounted) await _refreshDashboard();
       debugPrint('ENTER CODE FLOW CLOSED');
     } catch (error, stackTrace) {
       debugPrint('ENTER CODE ERROR: $error');
@@ -94,6 +96,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _openPage(String title) async {
     if (title == 'Enter Code' || title == 'Enter Transaction Code') {
       await _openEnterCode();
+      return;
+    }
+    if (title == 'Return Items') {
+      final returned = await showReturnCodeModal(context);
+      if (returned && mounted) await _refreshDashboard();
       return;
     }
     if (title == 'New Transaction') {
