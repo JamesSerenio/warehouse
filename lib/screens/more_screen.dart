@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/animations/animated_tab_icon.dart';
+import '../widgets/animations/animated_pressable.dart';
 
 import '../functions/navigation/main_tab_function.dart';
 
@@ -240,48 +241,50 @@ class _MoreMenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = isDanger ? const Color(0xFFEF4444) : const Color(0xFF0D5BE1);
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(13),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        hoverColor: const Color(0xFFF1F5FA),
-        child: Container(
-          height: 66,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFE1E8F0)),
-            borderRadius: BorderRadius.circular(13),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: isDanger
-                      ? const Color(0xFFFEE2E2)
-                      : const Color(0xFFE8F0FF),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: accent, size: 21),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
+    return AnimatedPressable(
+      onTap: onTap,
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(13),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          hoverColor: const Color(0xFFF1F5FA),
+          child: Container(
+            height: 66,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFE1E8F0)),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
                     color: isDanger
-                        ? const Color(0xFFDC2626)
-                        : const Color(0xFF172033),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                        ? const Color(0xFFFEE2E2)
+                        : const Color(0xFFE8F0FF),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: accent, size: 21),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: isDanger
+                          ? const Color(0xFFDC2626)
+                          : const Color(0xFF172033),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-              Icon(Icons.chevron_right_rounded, color: accent, size: 22),
-            ],
+                Icon(Icons.chevron_right_rounded, color: accent, size: 22),
+              ],
+            ),
           ),
         ),
       ),

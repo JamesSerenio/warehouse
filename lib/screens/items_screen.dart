@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/animations/animated_list_item.dart';
+
 import '../widgets/animations/animated_tab_icon.dart';
 
 import '../functions/navigation/main_tab_function.dart';
@@ -272,9 +274,13 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                 mainAxisSpacing: 14,
                                 childAspectRatio: columns == 1 ? 2.7 : 2.25,
                               ),
-                          itemBuilder: (_, index) => _ItemCard(
-                            item: items[index],
-                            onTap: () => _view(items[index]),
+                          itemBuilder: (_, index) => AnimatedListItem(
+                            key: ValueKey('$index-$_filter-${_search.text}'),
+                            index: index,
+                            child: _ItemCard(
+                              item: items[index],
+                              onTap: () => _view(items[index]),
+                            ),
                           ),
                         );
                       },
@@ -365,7 +371,7 @@ class _ItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${item.typeLabel} â€¢ ${item.unit}',
+                    '${item.typeLabel} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ${item.unit}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

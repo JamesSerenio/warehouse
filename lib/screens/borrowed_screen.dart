@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/animations/animated_list_item.dart';
+
 import '../widgets/animations/animated_tab_icon.dart';
 
 import '../functions/navigation/main_tab_function.dart';
@@ -190,13 +192,17 @@ class _BorrowedScreenState extends State<BorrowedScreen> {
                 sliver: SliverList.separated(
                   itemCount: records.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 13),
-                  itemBuilder: (_, index) => Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1280),
-                      child: _BorrowedCard(
-                        transaction: records[index],
-                        onTap: () => _details(records[index]),
-                        onReturn: () => _return(records[index]),
+                  itemBuilder: (_, index) => AnimatedListItem(
+                    key: ValueKey('$index-${_filter.name}-${_search.text}'),
+                    index: index,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1280),
+                        child: _BorrowedCard(
+                          transaction: records[index],
+                          onTap: () => _details(records[index]),
+                          onReturn: () => _return(records[index]),
+                        ),
                       ),
                     ),
                   ),

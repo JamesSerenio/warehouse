@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/animations/animated_list_item.dart';
+
 import '../widgets/animations/animated_tab_icon.dart';
 
 import '../functions/navigation/main_tab_function.dart';
@@ -359,10 +361,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
         )
       else
-        ...filtered.map(
-          (item) => _ReportRow(
-            item: item,
-            onTap: () => showReportDetailModal(context, item),
+        ...filtered.asMap().entries.map(
+          (entry) => AnimatedListItem(
+            key: ValueKey('$entry-${_filter.name}-${_search.text}'),
+            index: entry.key,
+            child: _ReportRow(
+              item: entry.value,
+              onTap: () => showReportDetailModal(context, entry.value),
+            ),
           ),
         ),
     ];
@@ -511,7 +517,7 @@ class _ReportRow extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${item.typeLabel} â€¢ ${item.unit}',
+                        '${item.typeLabel} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ ${item.unit}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF64748B),

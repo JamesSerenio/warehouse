@@ -570,7 +570,7 @@ class _DueTodaySection extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  '${item.transactionCode} Ã¢â‚¬Â¢ ${item.borrowerName}',
+                                  '${item.transactionCode} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${item.borrowerName}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -847,6 +847,13 @@ class _NotificationBell extends StatelessWidget {
   );
 }
 
+List<Widget> _staggered(List<Widget> children, {int startMilliseconds = 0}) => [
+  for (var index = 0; index < children.length; index++)
+    AnimatedFadeSlide(
+      delay: Duration(milliseconds: startMilliseconds + index * 40),
+      child: children[index],
+    ),
+];
 String _philippineTime(DateTime value) {
   final local = value.toUtc().add(const Duration(hours: 8));
   final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;

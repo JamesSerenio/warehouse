@@ -17,9 +17,6 @@ Future<T?> showAnimatedWarehouseModal<T>({
     transitionDuration: reduceMotion
         ? const Duration(milliseconds: 1)
         : AppAnimationDurations.modal,
-    reverseTransitionDuration: reduceMotion
-        ? const Duration(milliseconds: 1)
-        : AppAnimationDurations.modal,
     pageBuilder: (context, animation, secondaryAnimation) {
       final size = MediaQuery.sizeOf(context);
       return SafeArea(
