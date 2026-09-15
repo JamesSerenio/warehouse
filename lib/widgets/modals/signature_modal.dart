@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
@@ -33,25 +33,6 @@ class _SignatureModalState extends State<_SignatureModal> {
   final _signatureKey = GlobalKey();
   String? _error;
   bool _isConfirming = false;
-  int? _activePointer;
-
-  void _startSignature(PointerDownEvent event) {
-    if (_activePointer != null) return;
-    _activePointer = event.pointer;
-    _addPoint(event.localPosition);
-  }
-
-  void _continueSignature(PointerMoveEvent event) {
-    if (_activePointer != event.pointer) return;
-    _addPoint(event.localPosition);
-  }
-
-  void _endSignature(PointerEvent event) {
-    if (_activePointer != event.pointer) return;
-    _activePointer = null;
-    _addPoint(null);
-  }
-
   void _addPoint(Offset? point) {
     setState(() {
       _points.add(point);
@@ -176,12 +157,14 @@ class _SignatureModalState extends State<_SignatureModal> {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: LayoutBuilder(
-                        builder: (context, constraints) => Listener(
+                        builder: (context, constraints) => GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onPointerDown: _startSignature,
-                          onPointerMove: _continueSignature,
-                          onPointerUp: _endSignature,
-                          onPointerCancel: _endSignature,
+                          onPanStart: (details) =>
+                              _addPoint(details.localPosition),
+                          onPanUpdate: (details) =>
+                              _addPoint(details.localPosition),
+                          onPanEnd: (_) => _addPoint(null),
+                          onPanCancel: () => _addPoint(null),
                           child: CustomPaint(
                             painter: _SignaturePainter(_points),
                             size: Size(
@@ -382,7 +365,7 @@ class _SummaryItem extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                '${entry.item.typeLabel} â€¢ ${entry.quantity} ${entry.item.unit}',
+                '${entry.item.typeLabel} Ã¢â‚¬Â¢ ${entry.quantity} ${entry.item.unit}',
                 style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
               ),
             ],
