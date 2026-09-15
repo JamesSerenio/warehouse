@@ -38,12 +38,18 @@ class WarehouseItem {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  String get typeLabel => switch (itemType) {
-    'tool' => 'Tool',
-    'equipment' => 'Equipment',
-    'material' => 'Material / Consumable',
-    _ => itemType,
-  };
+  String get typeLabel {
+    final normalizedType = itemType.toLowerCase().trim();
+    return switch (normalizedType) {
+      'tool' => 'Tool',
+      'equipment' => 'Equipment',
+      'material' ||
+      'consumable' ||
+      'material / consumable' => 'Material / Consumable',
+      _ => itemType.trim(),
+    };
+  }
+
   String? get imageUrl => imagePath == null || imagePath!.isEmpty
       ? null
       : SupabaseService.client.storage

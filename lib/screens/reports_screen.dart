@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../widgets/animations/animated_list_item.dart';
 
@@ -517,7 +517,7 @@ class _ReportRow extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${item.typeLabel} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ ${item.unit}',
+                        '${item.typeLabel} • ${item.unit}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF64748B),

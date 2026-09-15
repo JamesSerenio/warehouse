@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../widgets/animations/animated_tab_icon.dart';
 
@@ -570,7 +570,7 @@ class _DueTodaySection extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  '${item.transactionCode} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${item.borrowerName}',
+                                  '${item.transactionCode} • ${item.borrowerName}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
