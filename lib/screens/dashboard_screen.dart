@@ -15,7 +15,6 @@ import 'borrowed_screen.dart';
 import 'items_screen.dart';
 import 'more_screen.dart';
 import 'reports_screen.dart';
-import 'stock_history_screen.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/logout_confirmation_dialog.dart';
 import '../widgets/modals/return_items_list_modal.dart';
@@ -189,7 +188,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'Borrowed' => const BorrowedScreen(),
         'Reports' => const ReportsScreen(),
         'More' => const MoreScreen(),
-        'Stock History' => const StockHistoryScreen(),
         _ => null,
       };
       if (destination == null) {

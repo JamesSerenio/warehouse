@@ -55,7 +55,9 @@ class _StockHistoryModalState extends State<_StockHistoryModal> {
           final matchesQuery =
               query.isEmpty ||
               record.itemName.toLowerCase().contains(query) ||
-              (record.referenceCode?.toLowerCase().contains(query) ?? false);
+              (record.referenceCode?.toLowerCase().contains(query) ?? false) ||
+              action.toLowerCase().contains(query) ||
+              record.movementType.toLowerCase().contains(query);
           return matchesAction && matchesQuery;
         })
         .toList(growable: false);
@@ -155,7 +157,7 @@ class _StockHistoryModalState extends State<_StockHistoryModal> {
                             'Borrowed',
                             'Returned',
                             'Material Issued',
-                            'Adjustment',
+                            'Stock Correction',
                           ])
                             PopupMenuItem(value: action, child: Text(action)),
                         ],
@@ -273,6 +275,8 @@ class _HistoryTableState extends State<_HistoryTable> {
                 DataColumn(label: Text('Action')),
                 DataColumn(label: Text('Qty'), numeric: true),
                 DataColumn(label: Text('Balance'), numeric: true),
+                DataColumn(label: Text('Reference')),
+                DataColumn(label: Text('Note')),
               ],
               rows: [
                 for (final record in widget.records)
@@ -290,6 +294,15 @@ class _HistoryTableState extends State<_HistoryTable> {
                       DataCell(_ActionBadge(type: record.movementType)),
                       DataCell(Text(_quantity(record))),
                       DataCell(Text('${record.balanceAfter}')),
+                      DataCell(
+                        SizedBox(
+                          width: 100,
+                          child: Text(record.referenceCode ?? '—'),
+                        ),
+                      ),
+                      DataCell(
+                        SizedBox(width: 220, child: Text(record.note ?? '—')),
+                      ),
                     ],
                   ),
               ],
@@ -367,7 +380,8 @@ String _actionLabel(String type) => switch (type.toLowerCase()) {
   'borrowed' || 'borrow' => 'Borrowed',
   'returned' || 'return' => 'Returned',
   'material_issued' || 'issued' => 'Material Issued',
-  _ => 'Adjustment',
+  'stock_correction' || 'adjustment' => 'Stock Correction',
+  _ => 'Stock Correction',
 };
 
 String _quantity(StockMovementRecord record) {

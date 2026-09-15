@@ -17,6 +17,7 @@ class StockMovementRecord {
     required this.quantity,
     required this.balanceAfter,
     this.referenceCode,
+    this.note,
   });
 
   final DateTime? createdAt;
@@ -25,6 +26,7 @@ class StockMovementRecord {
   final num quantity;
   final num balanceAfter;
   final String? referenceCode;
+  final String? note;
 
   factory StockMovementRecord.fromJson(Map<String, dynamic> json) {
     final item = json['items'];
@@ -38,6 +40,7 @@ class StockMovementRecord {
           ? json['balance_after'] as num
           : 0,
       referenceCode: json['reference_code']?.toString(),
+      note: json['note']?.toString(),
     );
   }
 }
@@ -49,7 +52,7 @@ abstract final class StockHistoryFunction {
           .from('stock_movements')
           .select(
             'created_at, movement_type, quantity, balance_after, '
-            'reference_code, items(product_name)',
+            'reference_code, note, items(product_name)',
           )
           .order('created_at', ascending: false);
 

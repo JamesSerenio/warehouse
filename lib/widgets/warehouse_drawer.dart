@@ -24,7 +24,8 @@ class WarehouseDrawer extends StatelessWidget {
   void _navigate(BuildContext context, String page) {
     if (page == 'New Transaction' ||
         page == 'Return Items' ||
-        page == 'Enter Transaction Code') {
+        page == 'Enter Transaction Code' ||
+        page == 'Stock History') {
       DrawerFunction.close(context);
       Future<void>.delayed(const Duration(milliseconds: 250), () {
         onNavigate(page);
