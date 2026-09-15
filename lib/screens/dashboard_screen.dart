@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../functions/dashboard/dashboard_notification_function.dart';
 import '../functions/dashboard/dashboard_summary_function.dart';
+import '../functions/transactions/enter_code_function.dart';
 import '../functions/navigation/navigation_function.dart';
 import '../models/dashboard_summary.dart';
 import '../widgets/modals/add_item_modal.dart';
 import '../widgets/modals/enter_code_modal.dart';
 import '../widgets/modals/new_transaction_modal.dart';
+import '../widgets/modals/notifications_modal.dart';
+import '../widgets/modals/transaction_details_modal.dart';
+import '../widgets/modals/view_item_modal.dart';
 import 'items_screen.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/logout_confirmation_dialog.dart';
@@ -23,6 +28,8 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   DashboardSummary? _summary;
   bool _isLoading = true;
+  DashboardNotificationPreferences _notificationPreferences =
+      DashboardNotificationFunction.preferences.value;
 
   static const _navItems = [
     (label: 'Dashboard', icon: Icons.home_rounded),
@@ -34,7 +41,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    DashboardNotificationFunction.preferences.addListener(
+      _notificationPreferencesChanged,
+    );
+    DashboardNotificationFunction.load();
     _refreshDashboard();
+  }
+
+  @override
+  void dispose() {
+    DashboardNotificationFunction.preferences.removeListener(
+      _notificationPreferencesChanged,
+    );
+    super.dispose();
+  }
+
+  void _notificationPreferencesChanged() {
+    if (!mounted) return;
+    setState(() {
+      _notificationPreferences =
+          DashboardNotificationFunction.preferences.value;
+    });
+  }
+
+  Future<void> _openNotifications({
+    bool? showLowStock,
+    bool? showDueToday,
+  }) async {
+    final summary = _summary;
+    if (summary == null) return;
+    await showNotificationsModal(
+      context,
+      lowStockItems: summary.lowStockItems,
+      dueTodayItems: summary.dueTodayItems,
+      showLowStock: showLowStock ?? _notificationPreferences.lowStockAlerts,
+      showDueToday: showDueToday ?? _notificationPreferences.dueTodayReminders,
+    );
+    if (mounted) await _refreshDashboard();
+  }
+
+  Future<void> _openDueTodayItem(DashboardDueTodayItem item) async {
+    try {
+      final transaction = await EnterCodeFunction.findTransaction(
+        item.transactionCode,
+      );
+      if (!mounted) return;
+      await showTransactionDetailsModal(context, transaction: transaction);
+      if (mounted) await _refreshDashboard();
+    } catch (error, stackTrace) {
+      debugPrint('DASHBOARD DUE TODAY DETAILS ERROR: $error');
+      debugPrint('$stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to load transaction details.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openLowStockItem(DashboardLowStockItem item) async {
+    await showViewItemModal(context, item.item);
+    if (mounted) await _refreshDashboard();
   }
 
   Future<void> _refreshDashboard() async {
@@ -149,12 +216,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            tooltip: 'Notifications',
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('No new notifications.')),
-            ),
-            icon: const Icon(Icons.notifications_none_rounded),
+          _NotificationBell(
+            count: _notificationPreferences.lowStockAlerts
+                ? _summary?.lowStockItems.length ?? 0
+                : 0,
+            onTap: _isLoading ? null : _openNotifications,
           ),
           const SizedBox(width: 12),
         ],
@@ -278,6 +344,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: _DueTodaySection(
                                 items: _summary?.dueTodayItems ?? const [],
                                 isLoading: _isLoading,
+                                onTap: _openDueTodayItem,
+                                onViewAll: () => _openNotifications(
+                                  showLowStock: false,
+                                  showDueToday: true,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -285,6 +356,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: _LowStockSection(
                                 items: _summary?.lowStockItems ?? const [],
                                 isLoading: _isLoading,
+                                onTap: _openLowStockItem,
+                                onViewAll: () => _openNotifications(
+                                  showLowStock: true,
+                                  showDueToday: false,
+                                ),
                               ),
                             ),
                           ],
@@ -295,11 +371,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _DueTodaySection(
                               items: _summary?.dueTodayItems ?? const [],
                               isLoading: _isLoading,
+                              onTap: _openDueTodayItem,
+                              onViewAll: () => _openNotifications(
+                                showLowStock: false,
+                                showDueToday: true,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             _LowStockSection(
                               items: _summary?.lowStockItems ?? const [],
                               isLoading: _isLoading,
+                              onTap: _openLowStockItem,
+                              onViewAll: () => _openNotifications(
+                                showLowStock: true,
+                                showDueToday: false,
+                              ),
                             ),
                           ],
                         ),
@@ -368,10 +454,17 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _DueTodaySection extends StatelessWidget {
-  const _DueTodaySection({required this.items, required this.isLoading});
+  const _DueTodaySection({
+    required this.items,
+    required this.isLoading,
+    required this.onTap,
+    required this.onViewAll,
+  });
 
   final List<DashboardDueTodayItem> items;
   final bool isLoading;
+  final ValueChanged<DashboardDueTodayItem> onTap;
+  final VoidCallback onViewAll;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -386,13 +479,14 @@ class _DueTodaySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionTitle('Due Today'),
+          _SectionHeader(
+            title: 'Due Today',
+            showViewAll: items.length > 5,
+            onViewAll: onViewAll,
+          ),
           const SizedBox(height: 14),
           if (isLoading)
-            const SizedBox(
-              height: 82,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
-            )
+            const _SectionLoader()
           else if (items.isEmpty)
             const SizedBox(
               height: 82,
@@ -407,29 +501,65 @@ class _DueTodaySection extends StatelessWidget {
             ...items
                 .take(5)
                 .map(
-                  (item) => ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(
-                      Icons.schedule_rounded,
-                      color: Color(0xFF0D5BE1),
-                    ),
-                    title: Text(
-                      item.productName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    subtitle: Text(
-                      '${item.transactionCode} • ${item.borrowerName}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: Text(
-                      '${item.remainingQuantity} ${item.unit}',
-                      style: const TextStyle(
-                        color: Color(0xFF0D5BE1),
-                        fontWeight: FontWeight.w700,
+                  (item) => InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => onTap(item),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      child: Row(
+                        children: [
+                          _DashboardProductImage(
+                            imageUrl: item.imageUrl,
+                            fallback: Icons.construction_rounded,
+                          ),
+                          const SizedBox(width: 11),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.productName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Color(0xFF172033),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  '${item.transactionCode} • ${item.borrowerName}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Color(0xFF64748B),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${item.remainingQuantity} ${item.unit}',
+                                style: const TextStyle(
+                                  color: Color(0xFF0D5BE1),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              Text(
+                                'Due ${_philippineTime(item.expectedReturnAt)}',
+                                style: const TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -441,129 +571,242 @@ class _DueTodaySection extends StatelessWidget {
 }
 
 class _LowStockSection extends StatelessWidget {
-  const _LowStockSection({required this.items, required this.isLoading});
+  const _LowStockSection({
+    required this.items,
+    required this.isLoading,
+    required this.onTap,
+    required this.onViewAll,
+  });
 
   final List<DashboardLowStockItem> items;
   final bool isLoading;
+  final ValueChanged<DashboardLowStockItem> onTap;
+  final VoidCallback onViewAll;
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: Color(0xFFE3E8F0)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const _SectionTitle('Low Stock Items'),
-            const SizedBox(height: 14),
-            if (isLoading)
-              const SizedBox(
-                height: 82,
-                child: Center(
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2.5),
-                  ),
+  Widget build(BuildContext context) => Card(
+    elevation: 0,
+    color: Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+      side: const BorderSide(color: Color(0xFFE3E8F0)),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(
+            title: 'Low Stock Items',
+            showViewAll: items.length > 5,
+            onViewAll: onViewAll,
+          ),
+          const SizedBox(height: 14),
+          if (isLoading)
+            const _SectionLoader()
+          else if (items.isEmpty)
+            const SizedBox(
+              height: 82,
+              child: Center(
+                child: Text(
+                  'No low stock items.',
+                  style: TextStyle(color: Color(0xFF66758A)),
                 ),
-              )
-            else if (items.isEmpty)
-              const SizedBox(
-                height: 82,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.inventory_2_outlined,
-                        size: 42,
-                        color: Color(0xFF9AAABD),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'No low stock items.',
-                        style: TextStyle(color: Color(0xFF66758A)),
-                      ),
-                    ],
-                  ),
+              ),
+            )
+          else
+            ...items
+                .take(5)
+                .map(
+                  (item) => _LowStockRow(item: item, onTap: () => onTap(item)),
                 ),
-              )
-            else
-              ...items.map(_LowStockRow.new),
-          ],
-        ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 class _LowStockRow extends StatelessWidget {
-  const _LowStockRow(this.item);
+  const _LowStockRow({required this.item, required this.onTap});
 
   final DashboardLowStockItem item;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
+  Widget build(BuildContext context) => InkWell(
+    borderRadius: BorderRadius.circular(10),
+    onTap: onTap,
+    child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: 42,
-              height: 42,
-              child: item.imageUrl == null
-                  ? const ColoredBox(
-                      color: Color(0xFFF0F4FA),
-                      child: Icon(
-                        Icons.inventory_2_outlined,
-                        color: Color(0xFF60748C),
-                      ),
-                    )
-                  : Image.network(
-                      item.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const ColoredBox(
-                            color: Color(0xFFF0F4FA),
-                            child: Icon(
-                              Icons.inventory_2_outlined,
-                              color: Color(0xFF60748C),
-                            ),
-                          ),
-                    ),
-            ),
+          _DashboardProductImage(
+            imageUrl: item.imageUrl,
+            fallback: Icons.inventory_2_outlined,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 11),
           Expanded(
-            child: Text(
-              item.productName,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF172033),
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.productName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF172033),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  'Alert level: ${item.lowStockLevel} ${item.unit}',
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 10),
-          Text(
-            '${item.availableStock} ${item.unit} left',
-            style: const TextStyle(
-              color: Color(0xFFE53935),
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${item.availableStock} ${item.unit} left',
+                style: const TextStyle(
+                  color: Color(0xFFE53935),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                item.isOutOfStock ? 'OUT OF STOCK' : 'LOW STOCK',
+                style: TextStyle(
+                  color: item.isOutOfStock
+                      ? const Color(0xFFB91C1C)
+                      : const Color(0xFFD97706),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.showViewAll,
+    required this.onViewAll,
+  });
+  final String title;
+  final bool showViewAll;
+  final VoidCallback onViewAll;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(child: _SectionTitle(title)),
+      if (showViewAll)
+        TextButton(onPressed: onViewAll, child: const Text('View All')),
+    ],
+  );
+}
+
+class _SectionLoader extends StatelessWidget {
+  const _SectionLoader();
+  @override
+  Widget build(BuildContext context) => const SizedBox(
+    height: 82,
+    child: Center(
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(strokeWidth: 2.5),
+      ),
+    ),
+  );
+}
+
+class _DashboardProductImage extends StatelessWidget {
+  const _DashboardProductImage({
+    required this.imageUrl,
+    required this.fallback,
+  });
+  final String? imageUrl;
+  final IconData fallback;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(8),
+    child: SizedBox(
+      width: 44,
+      height: 44,
+      child: imageUrl == null
+          ? _fallback
+          : Image.network(
+              imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _fallback,
+            ),
+    ),
+  );
+
+  Widget get _fallback => ColoredBox(
+    color: const Color(0xFFF0F4FA),
+    child: Icon(fallback, color: const Color(0xFF60748C)),
+  );
+}
+
+class _NotificationBell extends StatelessWidget {
+  const _NotificationBell({required this.count, required this.onTap});
+  final int count;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    clipBehavior: Clip.none,
+    children: [
+      IconButton(
+        tooltip: 'Notifications',
+        onPressed: onTap,
+        icon: const Icon(Icons.notifications_none_rounded),
+      ),
+      if (count > 0)
+        Positioned(
+          right: 3,
+          top: 3,
+          child: Container(
+            constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF08213B), width: 1.5),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              count > 99 ? '99+' : '$count',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+    ],
+  );
+}
+
+String _philippineTime(DateTime value) {
+  final local = value.toUtc().add(const Duration(hours: 8));
+  final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '$hour:$minute ${local.hour < 12 ? 'AM' : 'PM'}';
 }

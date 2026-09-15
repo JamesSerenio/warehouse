@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../functions/auth/login_function.dart';
+import '../../functions/dashboard/dashboard_notification_function.dart';
 import 'modal_helper.dart';
 
 Future<void> showSettingsModal(BuildContext context) {
@@ -19,8 +20,35 @@ class _SettingsModal extends StatefulWidget {
 }
 
 class _SettingsModalState extends State<_SettingsModal> {
-  bool _lowStockAlerts = true;
-  bool _dueTodayReminders = true;
+  bool _lowStockAlerts =
+      DashboardNotificationFunction.preferences.value.lowStockAlerts;
+  bool _dueTodayReminders =
+      DashboardNotificationFunction.preferences.value.dueTodayReminders;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final preferences = await DashboardNotificationFunction.load();
+    if (!mounted) return;
+    setState(() {
+      _lowStockAlerts = preferences.lowStockAlerts;
+      _dueTodayReminders = preferences.dueTodayReminders;
+    });
+  }
+
+  Future<void> _setLowStockAlerts(bool value) async {
+    setState(() => _lowStockAlerts = value);
+    await DashboardNotificationFunction.setLowStockAlerts(value);
+  }
+
+  Future<void> _setDueTodayReminders(bool value) async {
+    setState(() => _dueTodayReminders = value);
+    await DashboardNotificationFunction.setDueTodayReminders(value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +65,7 @@ class _SettingsModalState extends State<_SettingsModal> {
             title: 'Low Stock Alerts',
             trailing: Switch(
               value: _lowStockAlerts,
-              onChanged: (value) => setState(() => _lowStockAlerts = value),
+              onChanged: _setLowStockAlerts,
             ),
           ),
           _SettingTile(
@@ -45,7 +73,7 @@ class _SettingsModalState extends State<_SettingsModal> {
             title: 'Due Today Reminders',
             trailing: Switch(
               value: _dueTodayReminders,
-              onChanged: (value) => setState(() => _dueTodayReminders = value),
+              onChanged: _setDueTodayReminders,
             ),
           ),
           const SizedBox(height: 18),

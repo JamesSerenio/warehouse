@@ -1,46 +1,45 @@
 import 'package:flutter/foundation.dart';
 
+import '../../functions/inventory/inventory_list_function.dart';
 import '../../models/dashboard_summary.dart';
 import '../../services/supabase_service.dart';
 
 abstract final class DashboardLowStockFunction {
+  static const _columns =
+      'id, product_name, item_type, unit, total_stock, available_stock, borrowed_stock, low_stock_level, note, image_path, is_active, created_at, updated_at';
+
   static Future<List<DashboardLowStockItem>> load() async {
     try {
       final rows = await SupabaseService.client
           .from('items')
-          .select(
-            'product_name, available_stock, low_stock_level, unit, image_path',
-          )
+          .select(_columns)
           .eq('is_active', true);
       final items = rows
-          .where((row) {
-            final available = (row['available_stock'] as num?)?.toInt() ?? 0;
-            final threshold = (row['low_stock_level'] as num?)?.toInt() ?? 0;
-            return available <= threshold;
-          })
-          .map((row) {
-            final imagePath = row['image_path']?.toString();
-            return DashboardLowStockItem(
-              productName: row['product_name']?.toString() ?? 'Unnamed item',
-              availableStock: (row['available_stock'] as num?)?.toInt() ?? 0,
-              unit: row['unit']?.toString() ?? '',
-              imageUrl: imagePath == null || imagePath.isEmpty
-                  ? null
-                  : SupabaseService.client.storage
-                        .from('item-images')
-                        .getPublicUrl(imagePath),
-            );
-          })
+          .map(WarehouseItem.fromJson)
+          .where(isLowStock)
+          .map((item) => DashboardLowStockItem(item: item))
           .toList();
-      items.sort(
-        (first, second) =>
-            first.availableStock.compareTo(second.availableStock),
-      );
-      return items.take(5).toList(growable: false);
+      items.sort(compareLowStock);
+      return List.unmodifiable(items);
     } catch (error, stackTrace) {
       debugPrint('DASHBOARD LOW STOCK ERROR: $error');
       debugPrint('$stackTrace');
       return const [];
     }
   }
+}
+
+bool isLowStock(WarehouseItem item) =>
+    item.isActive && item.availableStock <= item.lowStockLevel;
+
+int compareLowStock(DashboardLowStockItem first, DashboardLowStockItem second) {
+  final outOfStock = (first.isOutOfStock ? 0 : 1).compareTo(
+    second.isOutOfStock ? 0 : 1,
+  );
+  if (outOfStock != 0) return outOfStock;
+  final available = first.availableStock.compareTo(second.availableStock);
+  if (available != 0) return available;
+  return first.productName.toLowerCase().compareTo(
+    second.productName.toLowerCase(),
+  );
 }
