@@ -11,7 +11,11 @@ import '../widgets/modals/new_transaction_modal.dart';
 import '../widgets/modals/notifications_modal.dart';
 import '../widgets/modals/transaction_details_modal.dart';
 import '../widgets/modals/view_item_modal.dart';
+import 'borrowed_screen.dart';
 import 'items_screen.dart';
+import 'more_screen.dart';
+import 'reports_screen.dart';
+import 'stock_history_screen.dart';
 import '../widgets/dashboard_stat_card.dart';
 import '../widgets/logout_confirmation_dialog.dart';
 import '../widgets/modals/return_items_list_modal.dart';
@@ -181,8 +185,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } else if (title == 'Add Item') {
       await showAddItemModal(context);
     } else {
-      NavigationFunction.goToPage(context, title);
-      return;
+      final destination = switch (title) {
+        'Borrowed' => const BorrowedScreen(),
+        'Reports' => const ReportsScreen(),
+        'More' => const MoreScreen(),
+        'Stock History' => const StockHistoryScreen(),
+        _ => null,
+      };
+      if (destination == null) {
+        NavigationFunction.goToPage(context, title);
+        return;
+      }
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => destination));
     }
     if (mounted) {
       await _refreshDashboard();
