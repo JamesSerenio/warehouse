@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../functions/notifications/open_notifications_function.dart';
+
 import '../widgets/animations/animated_tab_icon.dart';
 import '../widgets/animations/animated_pressable.dart';
 
@@ -88,9 +90,7 @@ class _MoreScreenState extends State<MoreScreen> {
         actions: [
           IconButton(
             tooltip: 'Notifications',
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('No new notifications.')),
-            ),
+            onPressed: () => OpenNotificationsFunction.open(context),
             icon: const Icon(Icons.notifications_none_rounded),
           ),
           const SizedBox(width: 12),

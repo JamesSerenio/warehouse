@@ -4,6 +4,8 @@ import 'package:warehouse_system/functions/dashboard/dashboard_due_today_functio
 import 'package:warehouse_system/functions/dashboard/dashboard_low_stock_function.dart';
 import 'package:warehouse_system/functions/dashboard/dashboard_notification_function.dart';
 import 'package:warehouse_system/functions/inventory/inventory_list_function.dart';
+import 'package:warehouse_system/functions/notifications/notification_badge_function.dart';
+import 'package:warehouse_system/functions/settings/notification_settings_function.dart';
 import 'package:warehouse_system/models/dashboard_summary.dart';
 
 void main() {
@@ -67,5 +69,56 @@ void main() {
     preferences = await DashboardNotificationFunction.load();
     expect(preferences.lowStockAlerts, isFalse);
     expect(preferences.dueTodayReminders, isFalse);
+  });
+
+  test('notification badge counts only enabled real records', () {
+    final lowStockItems = [
+      DashboardLowStockItem(item: item('Low', 1, 5)),
+      DashboardLowStockItem(item: item('Empty', 0, 5)),
+    ];
+    final dueTodayItems = [
+      DashboardDueTodayItem(
+        transactionCode: 'E79S',
+        borrowerName: 'Borrower',
+        contactNumber: '09123456789',
+        itemId: 'item-1',
+        productName: 'Hammer',
+        remainingQuantity: 1,
+        unit: 'pcs',
+        expectedReturnAt: DateTime.utc(2026, 9, 15),
+      ),
+    ];
+
+    expect(
+      NotificationBadgeFunction.calculate(
+        settings: const NotificationSettings(
+          lowStockAlerts: true,
+          dueTodayReminders: true,
+        ),
+        lowStockItems: lowStockItems,
+        dueTodayItems: dueTodayItems,
+      ),
+      3,
+    );
+    expect(
+      NotificationBadgeFunction.calculate(
+        settings: const NotificationSettings(
+          lowStockAlerts: false,
+          dueTodayReminders: true,
+        ),
+        lowStockItems: lowStockItems,
+        dueTodayItems: dueTodayItems,
+      ),
+      1,
+    );
+  });
+
+  test('notification settings use stable preference keys', () async {
+    SharedPreferences.setMockInitialValues({});
+    await NotificationSettingsFunction.setLowStockAlerts(false);
+    await NotificationSettingsFunction.setDueTodayReminders(false);
+    final storage = await SharedPreferences.getInstance();
+    expect(storage.getBool('low_stock_alerts_enabled'), isFalse);
+    expect(storage.getBool('due_today_reminders_enabled'), isFalse);
   });
 }

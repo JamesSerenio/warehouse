@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+
+import '../functions/notifications/open_notifications_function.dart';
 
 import '../widgets/animations/animated_list_item.dart';
 
@@ -122,9 +124,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
       ),
       actions: [
         IconButton(
-          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No new notifications.')),
-          ),
+          onPressed: () => OpenNotificationsFunction.open(context),
           icon: const Icon(Icons.notifications_none_rounded),
         ),
         const SizedBox(width: 12),

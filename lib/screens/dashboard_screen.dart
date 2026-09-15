@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../widgets/animations/animated_tab_icon.dart';
 
@@ -6,6 +6,8 @@ import '../widgets/animations/animated_fade_slide.dart';
 
 import '../functions/dashboard/dashboard_notification_function.dart';
 import '../functions/dashboard/dashboard_summary_function.dart';
+import '../functions/notifications/load_notifications_function.dart';
+import '../functions/notifications/notification_badge_function.dart';
 import '../functions/transactions/enter_code_function.dart';
 import '../functions/navigation/navigation_function.dart';
 import '../models/dashboard_summary.dart';
@@ -79,12 +81,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     bool? showLowStock,
     bool? showDueToday,
   }) async {
-    final summary = _summary;
-    if (summary == null) return;
+    final notifications = await LoadNotificationsFunction.load();
+    if (!mounted) return;
     await showNotificationsModal(
       context,
-      lowStockItems: summary.lowStockItems,
-      dueTodayItems: summary.dueTodayItems,
+      lowStockItems: notifications.lowStockItems,
+      dueTodayItems: notifications.dueTodayItems,
       showLowStock: showLowStock ?? _notificationPreferences.lowStockAlerts,
       showDueToday: showDueToday ?? _notificationPreferences.dueTodayReminders,
     );
@@ -252,9 +254,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         actions: [
           _NotificationBell(
-            count: _notificationPreferences.lowStockAlerts
-                ? _summary?.lowStockItems.length ?? 0
-                : 0,
+            count: NotificationBadgeFunction.calculate(
+              settings: _notificationPreferences,
+              lowStockItems: _summary?.lowStockItems ?? const [],
+              dueTodayItems: _summary?.dueTodayItems ?? const [],
+            ),
             onTap: _isLoading ? null : _openNotifications,
           ),
           const SizedBox(width: 12),

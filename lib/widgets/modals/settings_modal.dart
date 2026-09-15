@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../functions/auth/login_function.dart';
-import '../../functions/dashboard/dashboard_notification_function.dart';
+import '../../functions/settings/notification_settings_function.dart';
 import 'modal_helper.dart';
 
 Future<void> showSettingsModal(BuildContext context) {
@@ -21,9 +22,9 @@ class _SettingsModal extends StatefulWidget {
 
 class _SettingsModalState extends State<_SettingsModal> {
   bool _lowStockAlerts =
-      DashboardNotificationFunction.preferences.value.lowStockAlerts;
+      NotificationSettingsFunction.preferences.value.lowStockAlerts;
   bool _dueTodayReminders =
-      DashboardNotificationFunction.preferences.value.dueTodayReminders;
+      NotificationSettingsFunction.preferences.value.dueTodayReminders;
 
   @override
   void initState() {
@@ -32,7 +33,7 @@ class _SettingsModalState extends State<_SettingsModal> {
   }
 
   Future<void> _loadPreferences() async {
-    final preferences = await DashboardNotificationFunction.load();
+    final preferences = await NotificationSettingsFunction.load();
     if (!mounted) return;
     setState(() {
       _lowStockAlerts = preferences.lowStockAlerts;
@@ -42,12 +43,12 @@ class _SettingsModalState extends State<_SettingsModal> {
 
   Future<void> _setLowStockAlerts(bool value) async {
     setState(() => _lowStockAlerts = value);
-    await DashboardNotificationFunction.setLowStockAlerts(value);
+    await NotificationSettingsFunction.setLowStockAlerts(value);
   }
 
   Future<void> _setDueTodayReminders(bool value) async {
     setState(() => _dueTodayReminders = value);
-    await DashboardNotificationFunction.setDueTodayReminders(value);
+    await NotificationSettingsFunction.setDueTodayReminders(value);
   }
 
   @override
@@ -78,10 +79,12 @@ class _SettingsModalState extends State<_SettingsModal> {
           ),
           const SizedBox(height: 18),
           const _SectionTitle('Tablet & Signature Pad'),
-          const _SettingTile(
+          _SettingTile(
             icon: Icons.draw_outlined,
             title: 'Signature Pad',
-            subtitle: 'Device: HUION HS64\nStatus: Not Connected',
+            subtitle: kIsWeb
+                ? 'Device: HUION HS64\nStatus: Device detection not available on web'
+                : 'Device: HUION HS64\nStatus: Connection detected during signature use',
           ),
           const SizedBox(height: 18),
           const _SectionTitle('System Info'),
