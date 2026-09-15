@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../functions/navigation/main_tab_function.dart';
+
 import '../functions/navigation/navigation_function.dart';
 import '../functions/reports/monthly_report_function.dart';
 import '../functions/reports/report_export_function.dart';
@@ -11,7 +13,9 @@ import '../widgets/modals/report_detail_modal.dart';
 import '../widgets/warehouse_drawer.dart';
 
 class ReportsScreen extends StatefulWidget {
-  const ReportsScreen({super.key});
+  const ReportsScreen({super.key, this.onTabSelected});
+
+  final ValueChanged<int>? onTabSelected;
   @override
   State<ReportsScreen> createState() => _ReportsScreenState();
 }
@@ -49,6 +53,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   void _changed() => setState(() {});
   void _open(String page) {
+    final tabIndex = MainTabFunction.indexForPage(page);
+    if (tabIndex != null && widget.onTabSelected != null) {
+      widget.onTabSelected!(tabIndex);
+      return;
+    }
     if (page == 'Return Items') {
       _openPendingReturns();
       return;
@@ -80,6 +89,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   void _bottomTap(int index) {
+    if (widget.onTabSelected != null) {
+      widget.onTabSelected!(index);
+      return;
+    }
     switch (index) {
       case 0:
         NavigationFunction.goToDashboard(context);

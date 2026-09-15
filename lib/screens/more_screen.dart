@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../functions/navigation/main_tab_function.dart';
+
 import '../functions/auth/login_function.dart';
 import '../functions/navigation/navigation_function.dart';
 import '../widgets/logout_confirmation_dialog.dart';
@@ -9,7 +11,9 @@ import '../widgets/modals/stock_history_modal.dart';
 import '../widgets/warehouse_drawer.dart';
 
 class MoreScreen extends StatefulWidget {
-  const MoreScreen({super.key});
+  const MoreScreen({super.key, this.onTabSelected});
+
+  final ValueChanged<int>? onTabSelected;
 
   @override
   State<MoreScreen> createState() => _MoreScreenState();
@@ -24,7 +28,14 @@ class _MoreScreenState extends State<MoreScreen> {
     (label: 'More', icon: Icons.more_horiz_rounded),
   ];
 
-  void _open(String page) => NavigationFunction.goToPage(context, page);
+  void _open(String page) {
+    final tabIndex = MainTabFunction.indexForPage(page);
+    if (tabIndex != null && widget.onTabSelected != null) {
+      widget.onTabSelected!(tabIndex);
+      return;
+    }
+    NavigationFunction.goToPage(context, page);
+  }
 
   Future<void> _logout() async {
     final didLogout = await showLogoutConfirmationDialog(context);
@@ -33,6 +44,10 @@ class _MoreScreenState extends State<MoreScreen> {
   }
 
   void _onBottomNavigationTap(int index) {
+    if (widget.onTabSelected != null) {
+      widget.onTabSelected!(index);
+      return;
+    }
     switch (index) {
       case 0:
         NavigationFunction.goToDashboard(context);

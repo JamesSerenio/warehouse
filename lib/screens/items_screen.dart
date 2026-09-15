@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../functions/navigation/main_tab_function.dart';
+
 import '../functions/inventory/inventory_list_function.dart';
 import '../functions/inventory/search_item_function.dart';
 import '../functions/navigation/navigation_function.dart';
@@ -10,7 +12,9 @@ import '../widgets/modals/view_item_modal.dart';
 import '../widgets/warehouse_drawer.dart';
 
 class ItemsScreen extends StatefulWidget {
-  const ItemsScreen({super.key});
+  const ItemsScreen({super.key, this.onTabSelected});
+
+  final ValueChanged<int>? onTabSelected;
   @override
   State<ItemsScreen> createState() => _ItemsScreenState();
 }
@@ -45,6 +49,11 @@ class _ItemsScreenState extends State<ItemsScreen> {
   void _filterChanged() => setState(() {});
   void _reload() => setState(() => _items = InventoryListFunction.loadItems());
   void _open(String page) {
+    final tabIndex = MainTabFunction.indexForPage(page);
+    if (tabIndex != null && widget.onTabSelected != null) {
+      widget.onTabSelected!(tabIndex);
+      return;
+    }
     if (page == 'Return Items') {
       _openPendingReturns();
       return;
@@ -72,6 +81,10 @@ class _ItemsScreenState extends State<ItemsScreen> {
   }
 
   void _bottomTap(int index) {
+    if (widget.onTabSelected != null) {
+      widget.onTabSelected!(index);
+      return;
+    }
     switch (index) {
       case 0:
         NavigationFunction.goToDashboard(context);

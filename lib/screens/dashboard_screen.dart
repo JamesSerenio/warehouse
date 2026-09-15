@@ -12,6 +12,7 @@ import '../widgets/modals/notifications_modal.dart';
 import '../widgets/modals/transaction_details_modal.dart';
 import '../widgets/modals/view_item_modal.dart';
 import 'borrowed_screen.dart';
+import '../functions/navigation/main_tab_function.dart';
 import 'items_screen.dart';
 import 'more_screen.dart';
 import 'reports_screen.dart';
@@ -22,7 +23,10 @@ import '../widgets/quick_action_card.dart';
 import '../widgets/warehouse_drawer.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.onTabSelected, this.isActive = true});
+
+  final ValueChanged<int>? onTabSelected;
+  final bool isActive;
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -107,6 +111,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (mounted) await _refreshDashboard();
   }
 
+  @override
+  void didUpdateWidget(covariant DashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isActive && widget.isActive) {
+      _refreshDashboard();
+    }
+  }
+
   Future<void> _refreshDashboard() async {
     if (mounted) {
       setState(() => _isLoading = true);
@@ -164,6 +176,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _openPage(String title) async {
+    final tabIndex = MainTabFunction.indexForPage(title);
+    if (tabIndex != null && widget.onTabSelected != null) {
+      widget.onTabSelected!(tabIndex);
+      return;
+    }
     if (title == 'Enter Code' || title == 'Enter Transaction Code') {
       await _openEnterCode();
       return;
@@ -414,6 +431,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         onTap: (index) {
+          if (widget.onTabSelected != null) {
+            widget.onTabSelected!(index);
+            return;
+          }
           switch (index) {
             case 0:
               return;

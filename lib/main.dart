@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/supabase_config.dart';
 import 'functions/auth/login_function.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/main_shell.dart';
 import 'screens/login_screen.dart';
 
 Future<void> main() async {
@@ -58,9 +58,7 @@ class _AuthGateState extends State<AuthGate> {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        return snapshot.data == true
-            ? const DashboardScreen()
-            : const LoginScreen();
+        return snapshot.data == true ? const MainShell() : const LoginScreen();
       },
     );
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../functions/navigation/main_tab_function.dart';
+
 import '../functions/borrowed/borrowed_filter_function.dart';
 import '../functions/borrowed/borrowed_list_function.dart';
 import '../functions/borrowed/borrowed_search_function.dart';
@@ -13,7 +15,9 @@ import '../widgets/modals/transaction_details_modal.dart';
 import '../widgets/warehouse_drawer.dart';
 
 class BorrowedScreen extends StatefulWidget {
-  const BorrowedScreen({super.key});
+  const BorrowedScreen({super.key, this.onTabSelected});
+
+  final ValueChanged<int>? onTabSelected;
   @override
   State<BorrowedScreen> createState() => _BorrowedScreenState();
 }
@@ -47,6 +51,11 @@ class _BorrowedScreenState extends State<BorrowedScreen> {
 
   void _changed() => setState(() {});
   void _open(String page) {
+    final tabIndex = MainTabFunction.indexForPage(page);
+    if (tabIndex != null && widget.onTabSelected != null) {
+      widget.onTabSelected!(tabIndex);
+      return;
+    }
     if (page == 'Return Items') {
       _openPendingReturns();
       return;
@@ -85,6 +94,10 @@ class _BorrowedScreenState extends State<BorrowedScreen> {
   }
 
   void _bottomTap(int index) {
+    if (widget.onTabSelected != null) {
+      widget.onTabSelected!(index);
+      return;
+    }
     switch (index) {
       case 0:
         NavigationFunction.goToDashboard(context);
