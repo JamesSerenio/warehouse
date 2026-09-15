@@ -133,7 +133,9 @@ abstract final class NewTransactionFunction {
     final validation = validateDraft(draft);
     if (validation != null) throw CreateTransactionException(validation);
     if (signaturePng.isEmpty) {
-      throw const CreateTransactionException('Borrower signature is required.');
+      throw const CreateTransactionException(
+        "Borrower's signature is required.",
+      );
     }
 
     final code = await _generateUniqueCode();

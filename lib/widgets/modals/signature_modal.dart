@@ -33,6 +33,24 @@ class _SignatureModalState extends State<_SignatureModal> {
   final _signatureKey = GlobalKey();
   String? _error;
   bool _isConfirming = false;
+  int? _activePointer;
+
+  void _startSignature(PointerDownEvent event) {
+    if (_activePointer != null) return;
+    _activePointer = event.pointer;
+    _addPoint(event.localPosition);
+  }
+
+  void _continueSignature(PointerMoveEvent event) {
+    if (_activePointer != event.pointer) return;
+    _addPoint(event.localPosition);
+  }
+
+  void _endSignature(PointerEvent event) {
+    if (_activePointer != event.pointer) return;
+    _activePointer = null;
+    _addPoint(null);
+  }
 
   void _addPoint(Offset? point) {
     setState(() {
@@ -43,7 +61,7 @@ class _SignatureModalState extends State<_SignatureModal> {
 
   Future<void> _confirm() async {
     if (!_points.any((point) => point != null)) {
-      setState(() => _error = 'Borrower signature is required.');
+      setState(() => _error = "Borrower's signature is required.");
       return;
     }
     setState(() {
@@ -93,6 +111,10 @@ class _SignatureModalState extends State<_SignatureModal> {
 
   @override
   Widget build(BuildContext context) {
+    final signatureHeight = (MediaQuery.sizeOf(context).height * .25).clamp(
+      180.0,
+      250.0,
+    );
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -146,7 +168,7 @@ class _SignatureModalState extends State<_SignatureModal> {
                   RepaintBoundary(
                     key: _signatureKey,
                     child: Container(
-                      height: 190,
+                      height: signatureHeight,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
@@ -154,13 +176,12 @@ class _SignatureModalState extends State<_SignatureModal> {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: LayoutBuilder(
-                        builder: (context, constraints) => GestureDetector(
+                        builder: (context, constraints) => Listener(
                           behavior: HitTestBehavior.opaque,
-                          onPanStart: (details) =>
-                              _addPoint(details.localPosition),
-                          onPanUpdate: (details) =>
-                              _addPoint(details.localPosition),
-                          onPanEnd: (_) => _addPoint(null),
+                          onPointerDown: _startSignature,
+                          onPointerMove: _continueSignature,
+                          onPointerUp: _endSignature,
+                          onPointerCancel: _endSignature,
                           child: CustomPaint(
                             painter: _SignaturePainter(_points),
                             size: Size(
@@ -361,7 +382,7 @@ class _SummaryItem extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                '${entry.item.typeLabel} • ${entry.quantity} ${entry.item.unit}',
+                '${entry.item.typeLabel} â€¢ ${entry.quantity} ${entry.item.unit}',
                 style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
               ),
             ],

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../functions/auth/login_function.dart';
@@ -76,15 +75,6 @@ class _SettingsModalState extends State<_SettingsModal> {
               value: _dueTodayReminders,
               onChanged: _setDueTodayReminders,
             ),
-          ),
-          const SizedBox(height: 18),
-          const _SectionTitle('Tablet & Signature Pad'),
-          _SettingTile(
-            icon: Icons.draw_outlined,
-            title: 'Signature Pad',
-            subtitle: kIsWeb
-                ? 'Device: HUION HS64\nStatus: Device detection not available on web'
-                : 'Device: HUION HS64\nStatus: Connection detected during signature use',
           ),
           const SizedBox(height: 18),
           const _SectionTitle('System Info'),
@@ -172,15 +162,9 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _SettingTile extends StatelessWidget {
-  const _SettingTile({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    this.trailing,
-  });
+  const _SettingTile({required this.icon, required this.title, this.trailing});
   final IconData icon;
   final String title;
-  final String? subtitle;
   final Widget? trailing;
 
   @override
@@ -194,9 +178,6 @@ class _SettingTile extends StatelessWidget {
     child: ListTile(
       leading: Icon(icon, color: const Color(0xFF0D5BE1)),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: subtitle == null
-          ? null
-          : Text(subtitle!, style: const TextStyle(height: 1.45)),
       trailing: trailing,
     ),
   );
