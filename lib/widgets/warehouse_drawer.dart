@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'animations/animation_constants.dart';
+
 import '../functions/auth/login_function.dart';
 import '../functions/navigation/drawer_function.dart';
 
@@ -249,37 +251,61 @@ class _DrawerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = selected ? Colors.white : const Color(0xFFD8E4F0);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Material(
-        color: selected ? WarehouseDrawer._primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(9),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          hoverColor: WarehouseDrawer._hover,
-          splashColor: const Color(0x334B91FF),
-          child: SizedBox(
-            height: 43,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 13),
-              child: Row(
-                children: [
-                  Icon(icon, size: 21, color: iconColor ?? foreground),
-                  const SizedBox(width: 13),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        color: textColor ?? foreground,
-                        fontSize: 13,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: reduceMotion
+          ? const Duration(milliseconds: 1)
+          : AppAnimationDurations.normal,
+      curve: AppAnimationCurves.standard,
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: Transform.translate(
+          offset: Offset(8 * (1 - value), 0),
+          child: child,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: AnimatedContainer(
+          duration: AppAnimationDurations.fast,
+          curve: AppAnimationCurves.standard,
+          decoration: BoxDecoration(
+            color: selected ? WarehouseDrawer._primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              hoverColor: WarehouseDrawer._hover,
+              splashColor: const Color(0x334B91FF),
+              child: SizedBox(
+                height: 43,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 13),
+                  child: Row(
+                    children: [
+                      Icon(icon, size: 21, color: iconColor ?? foreground),
+                      const SizedBox(width: 13),
+                      Expanded(
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            color: textColor ?? foreground,
+                            fontSize: 13,
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

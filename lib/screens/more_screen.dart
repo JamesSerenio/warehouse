@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/animations/animated_tab_icon.dart';
+
 import '../functions/navigation/main_tab_function.dart';
 
 import '../functions/auth/login_function.dart';
@@ -148,11 +150,15 @@ class _MoreScreenState extends State<MoreScreen> {
             BottomNavigationBarItem(
               icon: Padding(
                 padding: const EdgeInsets.only(bottom: 3),
-                child: Icon(item.icon, size: 23),
+                child: AnimatedTabIcon(icon: item.icon),
               ),
               activeIcon: Padding(
                 padding: const EdgeInsets.only(bottom: 3),
-                child: Icon(item.icon, size: 24),
+                child: AnimatedTabIcon(
+                  icon: item.icon,
+                  selected: true,
+                  size: 24,
+                ),
               ),
               label: item.label,
             ),

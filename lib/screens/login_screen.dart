@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/animations/animated_modal.dart';
+
 import '../functions/auth/login_function.dart';
 import '../functions/navigation/navigation_function.dart';
 import '../widgets/custom_text_field.dart';
@@ -88,29 +90,11 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _showLoginSuccessDialog() async {
-    await showGeneralDialog<void>(
+    await showAnimatedWarehouseModal<void>(
       context: context,
+      maxWidth: 420,
       barrierDismissible: false,
-      barrierLabel: 'Login successful',
-      barrierColor: const Color(0xCC020A13),
-      transitionDuration: const Duration(milliseconds: 380),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return const _LoginSuccessDialog();
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curvedAnimation = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutBack,
-          reverseCurve: Curves.easeInCubic,
-        );
-        return FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.82, end: 1).animate(curvedAnimation),
-            child: child,
-          ),
-        );
-      },
+      builder: (_) => const _LoginSuccessDialog(),
     );
   }
 

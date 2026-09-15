@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/animations/animated_tab_icon.dart';
+
+import '../widgets/animations/animated_fade_slide.dart';
+
 import '../functions/dashboard/dashboard_notification_function.dart';
 import '../functions/dashboard/dashboard_summary_function.dart';
 import '../functions/transactions/enter_code_function.dart';
@@ -290,7 +294,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             : width <= 500
                             ? 1.35
                             : 1.55,
-                        children: [
+                        children: _staggered([
                           DashboardStatCard(
                             label: 'Total Items',
                             value: _isLoading
@@ -323,7 +327,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             icon: Icons.warning_amber_rounded,
                             accentColor: const Color(0xFFE53935),
                           ),
-                        ],
+                        ]),
                       ),
                       const SizedBox(height: 28),
                       const _SectionTitle('Quick Actions'),
@@ -339,7 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             : width <= 500
                             ? 1.45
                             : 1.55,
-                        children: [
+                        children: _staggered([
                           QuickActionCard(
                             label: 'New Transaction',
                             icon: Icons.add_circle_outline_rounded,
@@ -365,7 +369,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             icon: Icons.analytics_outlined,
                             onTap: () => _open('Reports'),
                           ),
-                        ],
+                        ], startMilliseconds: 180),
                       ),
                       const SizedBox(height: 28),
                       if (width >= 900)
@@ -461,11 +465,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             BottomNavigationBarItem(
               icon: Padding(
                 padding: const EdgeInsets.only(bottom: 3),
-                child: Icon(item.icon, size: 23),
+                child: AnimatedTabIcon(icon: item.icon),
               ),
               activeIcon: Padding(
                 padding: const EdgeInsets.only(bottom: 3),
-                child: Icon(item.icon, size: 24),
+                child: AnimatedTabIcon(
+                  icon: item.icon,
+                  selected: true,
+                  size: 24,
+                ),
               ),
               label: item.label,
             ),
@@ -562,7 +570,7 @@ class _DueTodaySection extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  '${item.transactionCode} • ${item.borrowerName}',
+                                  '${item.transactionCode} Ã¢â‚¬Â¢ ${item.borrowerName}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(

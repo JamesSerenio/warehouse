@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/animations/animated_tab_icon.dart';
+
 import '../functions/navigation/main_tab_function.dart';
 
 import '../functions/navigation/navigation_function.dart';
@@ -223,8 +225,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
       items: [
         for (final item in _navItems)
           BottomNavigationBarItem(
-            icon: Icon(item.icon, size: 23),
-            activeIcon: Icon(item.icon, size: 24),
+            icon: AnimatedTabIcon(icon: item.icon),
+            activeIcon: AnimatedTabIcon(
+              icon: item.icon,
+              selected: true,
+              size: 24,
+            ),
             label: item.label,
           ),
       ],
@@ -505,7 +511,7 @@ class _ReportRow extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${item.typeLabel} • ${item.unit}',
+                        '${item.typeLabel} â€¢ ${item.unit}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF64748B),

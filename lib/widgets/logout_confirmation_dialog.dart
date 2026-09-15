@@ -1,31 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../functions/auth/logout_function.dart';
+import 'animations/animated_modal.dart';
 
 Future<bool> showLogoutConfirmationDialog(BuildContext context) async {
-  final result = await showGeneralDialog<bool>(
+  final result = await showAnimatedWarehouseModal<bool>(
     context: context,
-    barrierDismissible: true,
-    barrierLabel: 'Dismiss logout confirmation',
-    barrierColor: const Color(0xB3020A13),
-    transitionDuration: const Duration(milliseconds: 260),
-    pageBuilder: (context, animation, secondaryAnimation) {
-      return const _LogoutConfirmationDialog();
-    },
-    transitionBuilder: (context, animation, secondaryAnimation, child) {
-      final curvedAnimation = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutBack,
-        reverseCurve: Curves.easeInCubic,
-      );
-      return FadeTransition(
-        opacity: animation,
-        child: ScaleTransition(
-          scale: Tween<double>(begin: .88, end: 1).animate(curvedAnimation),
-          child: child,
-        ),
-      );
-    },
+    maxWidth: 410,
+    builder: (_) => const _LogoutConfirmationDialog(),
   );
   return result ?? false;
 }
