@@ -20,7 +20,9 @@ Future<CreatedTransaction?> showSignatureModal(
 }
 
 class _SignatureModal extends StatefulWidget {
-  const _SignatureModal({required this.draft});
+  const _SignatureModal({
+    required this.draft,
+  });
 
   final NewTransactionDraft draft;
 
@@ -31,8 +33,10 @@ class _SignatureModal extends StatefulWidget {
 class _SignatureModalState extends State<_SignatureModal> {
   final List<Offset?> _points = [];
   final _signatureKey = GlobalKey();
+
   String? _error;
   bool _isConfirming = false;
+
   void _addPoint(Offset? point) {
     setState(() {
       _points.add(point);
@@ -42,60 +46,91 @@ class _SignatureModalState extends State<_SignatureModal> {
 
   Future<void> _confirm() async {
     if (!_points.any((point) => point != null)) {
-      setState(() => _error = "Borrower's signature is required.");
+      setState(() {
+        _error = "Borrower's signature is required.";
+      });
       return;
     }
+
     setState(() {
       _isConfirming = true;
       _error = null;
     });
+
     try {
       final signaturePng = await _captureSignaturePng();
-      final transaction = await NewTransactionFunction.confirmTransaction(
+
+      final transaction =
+          await NewTransactionFunction.confirmTransaction(
         draft: widget.draft,
         signaturePng: signaturePng,
       );
+
       if (!mounted) return;
+
       Navigator.of(context).pop(transaction);
     } on CreateTransactionException catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted) {
+        setState(() {
+          _error = error.message;
+        });
+      }
     } catch (error, stackTrace) {
       debugPrint('CONFIRM TRANSACTION ERROR: $error');
       debugPrint('$stackTrace');
+
       if (mounted) {
-        setState(() => _error = 'Unable to confirm the transaction.');
+        setState(() {
+          _error = 'Unable to confirm the transaction.';
+        });
       }
     } finally {
-      if (mounted) setState(() => _isConfirming = false);
+      if (mounted) {
+        setState(() {
+          _isConfirming = false;
+        });
+      }
     }
   }
 
   Future<Uint8List> _captureSignaturePng() async {
     await WidgetsBinding.instance.endOfFrame;
+
     final boundary =
         _signatureKey.currentContext?.findRenderObject()
             as RenderRepaintBoundary?;
+
     if (boundary == null) {
       throw const CreateTransactionException(
         'Unable to capture the signature. Please try again.',
       );
     }
-    final image = await boundary.toImage(pixelRatio: 2);
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
+
+    final image = await boundary.toImage(
+      pixelRatio: 2,
+    );
+
+    final data = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+
     if (data == null) {
       throw const CreateTransactionException(
         'Unable to capture the signature. Please try again.',
       );
     }
+
     return data.buffer.asUint8List();
   }
 
   @override
   Widget build(BuildContext context) {
-    final signatureHeight = (MediaQuery.sizeOf(context).height * .25).clamp(
+    final signatureHeight =
+        (MediaQuery.sizeOf(context).height * .25).clamp(
       180.0,
       250.0,
     );
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -112,18 +147,31 @@ class _SignatureModalState extends State<_SignatureModal> {
       child: Column(
         children: [
           _ModalHeader(
-            onClose: _isConfirming ? null : () => Navigator.pop(context),
+            onClose: _isConfirming
+                ? null
+                : () => Navigator.pop(context),
           ),
           Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(22),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment:
+                    CrossAxisAlignment.stretch,
                 children: [
-                  _InfoRow(label: 'Borrower', value: widget.draft.borrowerName),
-                  const SizedBox(height: 7),
-                  _InfoRow(label: 'Contact', value: widget.draft.contactNumber),
-                  const SizedBox(height: 20),
+                  _InfoRow(
+                    label: 'Borrower',
+                    value: widget.draft.borrowerName,
+                  ),
+                  const SizedBox(
+                    height: 7,
+                  ),
+                  _InfoRow(
+                    label: 'Contact',
+                    value: widget.draft.contactNumber,
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   const Text(
                     'Items Summary',
                     style: TextStyle(
@@ -132,11 +180,17 @@ class _SignatureModalState extends State<_SignatureModal> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  ...widget.draft.items.map(
-                    (entry) => _SummaryItem(entry: entry),
+                  const SizedBox(
+                    height: 10,
                   ),
-                  const SizedBox(height: 20),
+                  ...widget.draft.items.map(
+                    (entry) => _SummaryItem(
+                      entry: entry,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   const Text(
                     "Borrower's Signature",
                     style: TextStyle(
@@ -145,31 +199,64 @@ class _SignatureModalState extends State<_SignatureModal> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   RepaintBoundary(
                     key: _signatureKey,
                     child: Container(
                       height: signatureHeight,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                        borderRadius:
+                            BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(
+                            0xFFCBD5E1,
+                          ),
+                        ),
                       ),
-                      clipBehavior: Clip.antiAlias,
+                      clipBehavior:
+                          Clip.antiAlias,
                       child: LayoutBuilder(
-                        builder: (context, constraints) => GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onPanStart: (details) =>
-                              _addPoint(details.localPosition),
-                          onPanUpdate: (details) =>
-                              _addPoint(details.localPosition),
-                          onPanEnd: (_) => _addPoint(null),
-                          onPanCancel: () => _addPoint(null),
+                        builder:
+                            (
+                              context,
+                              constraints,
+                            ) =>
+                                GestureDetector(
+                          behavior:
+                              HitTestBehavior.opaque,
+                          onPanStart:
+                              (details) =>
+                                  _addPoint(
+                            details.localPosition,
+                          ),
+                          onPanUpdate:
+                              (details) =>
+                                  _addPoint(
+                            details.localPosition,
+                          ),
+                          onPanEnd:
+                              (_) =>
+                                  _addPoint(
+                            null,
+                          ),
+                          onPanCancel:
+                              () =>
+                                  _addPoint(
+                            null,
+                          ),
                           child: CustomPaint(
-                            painter: _SignaturePainter(_points),
+                            painter:
+                                _SignaturePainter(
+                              _points,
+                            ),
                             size: Size(
-                              constraints.maxWidth,
-                              constraints.maxHeight,
+                              constraints
+                                  .maxWidth,
+                              constraints
+                                  .maxHeight,
                             ),
                           ),
                         ),
@@ -177,59 +264,115 @@ class _SignatureModalState extends State<_SignatureModal> {
                     ),
                   ),
                   if (_error != null) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     Text(
                       _error!,
-                      style: const TextStyle(
-                        color: Color(0xFFDC2626),
+                      style:
+                          const TextStyle(
+                        color: Color(
+                          0xFFDC2626,
+                        ),
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        fontWeight:
+                            FontWeight.w600,
                       ),
                     ),
                   ],
-                  const SizedBox(height: 18),
+                  const SizedBox(
+                    height: 18,
+                  ),
                   Wrap(
-                    alignment: WrapAlignment.end,
+                    alignment:
+                        WrapAlignment.end,
                     spacing: 10,
                     runSpacing: 10,
                     children: [
                       OutlinedButton(
-                        onPressed: _isConfirming
-                            ? null
-                            : () => setState(() {
-                                _points.clear();
-                                _error = null;
-                              }),
-                        child: const Text('CLEAR'),
+                        onPressed:
+                            _isConfirming
+                                ? null
+                                : () =>
+                                    setState(
+                                      () {
+                                        _points
+                                            .clear();
+
+                                        _error =
+                                            null;
+                                      },
+                                    ),
+                        child:
+                            const Text(
+                          'CLEAR',
+                        ),
                       ),
                       OutlinedButton(
-                        onPressed: _isConfirming
-                            ? null
-                            : () => Navigator.pop(context),
-                        child: const Text('CANCEL'),
+                        onPressed:
+                            _isConfirming
+                                ? null
+                                : () =>
+                                    Navigator.pop(
+                                      context,
+                                    ),
+                        child:
+                            const Text(
+                          'CANCEL',
+                        ),
                       ),
                       SizedBox(
                         width: 210,
-                        child: FilledButton.icon(
-                          onPressed: _isConfirming ? null : _confirm,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF0D5BE1),
-                            minimumSize: const Size.fromHeight(46),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(9),
+                        child:
+                            FilledButton.icon(
+                          onPressed:
+                              _isConfirming
+                                  ? null
+                                  : _confirm,
+                          style:
+                              FilledButton
+                                  .styleFrom(
+                            backgroundColor:
+                                const Color(
+                              0xFF0D5BE1,
+                            ),
+                            minimumSize:
+                                const Size
+                                    .fromHeight(
+                              46,
+                            ),
+                            shape:
+                                RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                9,
+                              ),
                             ),
                           ),
-                          icon: _isConfirming
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.check_rounded),
-                          label: const Text('CONFIRM TRANSACTION'),
+                          icon:
+                              _isConfirming
+                                  ? const SizedBox(
+                                      width:
+                                          18,
+                                      height:
+                                          18,
+                                      child:
+                                          CircularProgressIndicator(
+                                        strokeWidth:
+                                            2,
+                                        color:
+                                            Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons
+                                          .check_rounded,
+                                    ),
+                          label:
+                              const Text(
+                            'CONFIRM TRANSACTION',
+                          ),
                         ),
                       ),
                     ],
@@ -245,91 +388,141 @@ class _SignatureModalState extends State<_SignatureModal> {
 }
 
 class _ModalHeader extends StatelessWidget {
-  const _ModalHeader({required this.onClose});
+  const _ModalHeader({
+    required this.onClose,
+  });
+
   final VoidCallback? onClose;
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 62,
-    padding: const EdgeInsets.only(left: 22, right: 8),
-    color: const Color(0xFF08213B),
-    child: Row(
-      children: [
-        const Expanded(
-          child: Text(
-            'Review & Signature',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) {
+    return Container(
+      height: 62,
+      padding: const EdgeInsets.only(
+        left: 22,
+        right: 8,
+      ),
+      color: const Color(
+        0xFF08213B,
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'Review & Signature',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight:
+                    FontWeight.w700,
+              ),
             ),
           ),
-        ),
-        IconButton(
-          tooltip: 'Close',
-          onPressed: onClose,
-          color: Colors.white,
-          icon: const Icon(Icons.close_rounded),
-        ),
-      ],
-    ),
-  );
+          IconButton(
+            tooltip: 'Close',
+            onPressed: onClose,
+            color: Colors.white,
+            icon: const Icon(
+              Icons.close_rounded,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
+  const _InfoRow({
+    required this.label,
+    required this.value,
+  });
+
   final String label;
   final String value;
 
   @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(
-        width: 82,
-        child: Text(label, style: const TextStyle(color: Color(0xFF64748B))),
-      ),
-      Expanded(
-        child: Text(
-          value,
-          style: const TextStyle(
-            color: Color(0xFF172033),
-            fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 82,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Color(
+                0xFF64748B,
+              ),
+            ),
           ),
         ),
-      ),
-    ],
-  );
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Color(
+                0xFF172033,
+              ),
+              fontWeight:
+                  FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _ItemThumbnail extends StatelessWidget {
-  const _ItemThumbnail({required this.imageUrl});
+  const _ItemThumbnail({
+    required this.imageUrl,
+  });
 
   final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius:
+          BorderRadius.circular(8),
       child: SizedBox(
         width: 48,
         height: 48,
-        child: imageUrl == null || imageUrl!.isEmpty
+        child: imageUrl == null ||
+                imageUrl!.isEmpty
             ? const ColoredBox(
-                color: Color(0xFFE8F0FF),
+                color: Color(
+                  0xFFE8F0FF,
+                ),
                 child: Icon(
-                  Icons.inventory_2_outlined,
-                  color: Color(0xFF0D5BE1),
+                  Icons
+                      .inventory_2_outlined,
+                  color: Color(
+                    0xFF0D5BE1,
+                  ),
                 ),
               )
             : Image.network(
                 imageUrl!,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const ColoredBox(
-                  color: Color(0xFFE8F0FF),
+                errorBuilder:
+                    (
+                      context,
+                      error,
+                      stackTrace,
+                    ) =>
+                        const ColoredBox(
+                  color: Color(
+                    0xFFE8F0FF,
+                  ),
                   child: Icon(
-                    Icons.broken_image_outlined,
-                    color: Color(0xFF64748B),
+                    Icons
+                        .broken_image_outlined,
+                    color: Color(
+                      0xFF64748B,
+                    ),
                   ),
                 ),
               ),
@@ -339,62 +532,127 @@ class _ItemThumbnail extends StatelessWidget {
 }
 
 class _SummaryItem extends StatelessWidget {
-  const _SummaryItem({required this.entry});
+  const _SummaryItem({
+    required this.entry,
+  });
+
   final TransactionDraftItem entry;
 
   @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 8),
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF8FAFC),
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
-    ),
-    child: Row(
-      children: [
-        _ItemThumbnail(imageUrl: entry.item.imageUrl),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                entry.item.productName,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                '${entry.item.typeLabel} Ã¢â‚¬Â¢ ${entry.quantity} ${entry.item.unit}',
-                style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
-              ),
-            ],
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(
+        bottom: 8,
+      ),
+      padding: const EdgeInsets.all(
+        12,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(
+          0xFFF8FAFC,
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          10,
+        ),
+        border: Border.all(
+          color: const Color(
+            0xFFE2E8F0,
           ),
         ),
-      ],
-    ),
-  );
+      ),
+      child: Row(
+        children: [
+          _ItemThumbnail(
+            imageUrl:
+                entry.item.imageUrl,
+          ),
+          const SizedBox(
+            width: 12,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+              children: [
+                Text(
+                  entry.item.productName,
+                  style:
+                      const TextStyle(
+                    fontWeight:
+                        FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(
+                  height: 3,
+                ),
+                Text(
+                  '${entry.item.typeLabel} \u2022 ${entry.quantity} ${entry.item.unit}',
+                  style:
+                      const TextStyle(
+                    color: Color(
+                      0xFF64748B,
+                    ),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SignaturePainter extends CustomPainter {
-  const _SignaturePainter(this.points);
+  const _SignaturePainter(
+    this.points,
+  );
+
   final List<Offset?> points;
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(
+    Canvas canvas,
+    Size size,
+  ) {
     final paint = Paint()
-      ..color = const Color(0xFF172033)
+      ..color = const Color(
+        0xFF172033,
+      )
       ..strokeWidth = 2.4
-      ..strokeCap = StrokeCap.round;
-    for (var index = 0; index < points.length - 1; index++) {
-      final current = points[index];
-      final next = points[index + 1];
-      if (current != null && next != null) {
-        canvas.drawLine(current, next, paint);
+      ..strokeCap =
+          StrokeCap.round;
+
+    for (
+      var index = 0;
+      index < points.length - 1;
+      index++
+    ) {
+      final current =
+          points[index];
+
+      final next =
+          points[index + 1];
+
+      if (current != null &&
+          next != null) {
+        canvas.drawLine(
+          current,
+          next,
+          paint,
+        );
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _SignaturePainter oldDelegate) => true;
+  bool shouldRepaint(
+    covariant _SignaturePainter
+        oldDelegate,
+  ) {
+    return true;
+  }
 }
